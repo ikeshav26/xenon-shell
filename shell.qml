@@ -10,6 +10,7 @@ import "core"
 import "background"
 import "services"
 import "launcher"
+import "clipboard"
 
 ShellRoot {
     id: root
@@ -50,6 +51,26 @@ ShellRoot {
         target: "launcher"
         function toggle() {
             launcher.visible = !launcher.visible
+        }
+    }
+    Clipboard {
+        id: clipboard
+    }
+
+    // 1. Toggle Handler (For your keybind: Super+V)
+    IpcHandler {
+        target: "clipboard"
+        function toggle() { clipboard.visible = !clipboard.visible }
+    }
+
+    // 2. UPDATE Handler (For the script you found)
+    // Listens for: qs -c mannu ipc call cliphistService update
+    IpcHandler {
+        target: "cliphistService"
+        
+        function update() {
+            // This runs the refresh() function we just added to Clipboard.qml
+            clipboard.refresh() 
         }
     }
 
