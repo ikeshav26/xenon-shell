@@ -4,21 +4,17 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
+import "../core"
 
 PanelWindow {
     id: root
 
-    // --- Colors ---
-    QtObject {
-        id: colors
-        readonly property color bg: "#1a1b26"
-        readonly property color fg: "#a9b1d6"
-        readonly property color muted: "#444b6a"
-        readonly property color cyan: "#0db9d7"
-        readonly property color purple: "#ad8ee6"
-    }
+    required property Colors colors
+    required property GlobalState globalState
 
     // --- Configuration ---
+    visible: globalState.clipboardOpen
+
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
 
@@ -29,19 +25,17 @@ PanelWindow {
         right: true
     }
     color: "transparent"
-    visible: false
 
+    // 3. Update Closing Logic
     Shortcut {
         sequence: "Escape"
-        onActivated: root.visible = false
+        onActivated: globalState.closeAll()
     }
     MouseArea {
         anchors.fill: parent
         z: -1
-        onClicked: root.visible = false
+        onClicked: globalState.closeAll()
     }
-
-    // --- LOGIC ---
 
     function refresh() {
         loader.running = true;

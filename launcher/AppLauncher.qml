@@ -8,41 +8,60 @@ import "../core"
 PanelWindow {
     id: root
 
+    // 1. Receive State & Colors
     required property Colors colors
+    required property GlobalState globalState
 
-    // --- Window Configuration ---
+    // 2. Bind Visibility to Global State
+    visible: globalState.launcherOpen
+
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
-    
-    anchors { top: true; bottom: true; left: true; right: true }
-    color: "transparent"
-    visible: false
 
-    // --- Logic ---
-    Shortcut { sequence: "Escape"; onActivated: root.visible = false }
-    MouseArea { anchors.fill: parent; z: -1; onClicked: root.visible = false }
+    anchors {
+        top: true
+        bottom: true
+        left: true
+        right: true
+    }
+    color: "transparent"
+
+    // 3. Update Closing Logic
+    // Instead of 'root.visible = false', we update the state
+    Shortcut {
+        sequence: "Escape"
+        onActivated: globalState.closeAll()
+    }
+
+    MouseArea {
+        anchors.fill: parent
+        z: -1
+        onClicked: globalState.closeAll()
+    }
 
     onVisibleChanged: {
         if (visible) {
-            query = ""
-            input.text = ""
-            input.forceActiveFocus()
-            appList.currentIndex = 0
+            query = "";
+            input.text = "";
+            input.forceActiveFocus();
+            appList.currentIndex = 0;
         }
     }
 
     property string query: ""
-    
+
     // --- 2. IMPROVED SEARCH LOGIC ---
     property var filteredApps: {
         var apps = DesktopEntries.applications.values;
         var q = query.toLowerCase().trim();
 
-        if (q === "") return [];
+        if (q === "")
+            return [];
 
         // Step 1: Filter (Keep valid results)
         var matches = apps.filter(app => {
-            if (app.noDisplay) return false;
+            if (app.noDisplay)
+                return false;
             return app.name.toLowerCase().includes(q);
         });
 
@@ -52,16 +71,20 @@ PanelWindow {
             var nameB = b.name.toLowerCase();
 
             // A. Exact Match gets top priority
-            if (nameA === q && nameB !== q) return -1;
-            if (nameB === q && nameA !== q) return 1;
+            if (nameA === q && nameB !== q)
+                return -1;
+            if (nameB === q && nameA !== q)
+                return 1;
 
             // B. "Starts With" gets second priority
             // e.g. "Ves" -> "Vesktop" (Starts) vs "Drives" (Contains)
             var startA = nameA.startsWith(q);
             var startB = nameB.startsWith(q);
 
-            if (startA && !startB) return -1; // A wins
-            if (!startA && startB) return 1;  // B wins
+            if (startA && !startB)
+                return -1; // A wins
+            if (!startA && startB)
+                return 1;  // B wins
 
             // C. Tie-breaker: Alphabetical
             return nameA.localeCompare(nameB);
@@ -73,7 +96,7 @@ PanelWindow {
     // --- MAIN CONTAINER ---
     Rectangle {
         id: mainContainer
-        width: 480 
+        width: 480
         anchors.centerIn: parent
 
         height: 60 + (appList.count > 0 ? Math.min(appList.count * 44, 350) : 0)
@@ -84,7 +107,12 @@ PanelWindow {
         radius: 12
         clip: true
 
-        Behavior on height { NumberAnimation { duration: 250; easing.type: Easing.OutQuart } }
+        Behavior on height {
+            NumberAnimation {
+                duration: 250
+                easing.type: Easing.OutQuart
+            }
+        }
 
         ColumnLayout {
             anchors.fill: parent
@@ -94,17 +122,17 @@ PanelWindow {
             Item {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60
-                
+
                 RowLayout {
                     anchors.fill: parent
                     anchors.leftMargin: 16
                     anchors.rightMargin: 16
                     spacing: 12
 
-                    Text { 
+                    Text {
                         text: "🔎"
                         font.pixelSize: 18
-                        color: colors.purple 
+                        color: colors.purple
                     }
 
                     TextField {
@@ -118,10 +146,16 @@ PanelWindow {
                         placeholderTextColor: colors.muted
                         verticalAlignment: TextInput.AlignVCenter
 
-                        onTextChanged: { root.query = text; appList.currentIndex = 0 }
+                        onTextChanged: {
+                            root.query = text;
+                            appList.currentIndex = 0;
+                        }
                         Keys.onDownPressed: appList.incrementCurrentIndex()
                         Keys.onUpPressed: appList.decrementCurrentIndex()
-                        Keys.onReturnPressed: if (appList.count > 0) { appList.model[appList.currentIndex].execute(); root.visible = false }
+                        Keys.onReturnPressed: if (appList.count > 0) {
+                            appList.model[appList.currentIndex].execute();
+                            globalState.launcherOpen = false;
+                        }
                     }
                 }
 
@@ -140,7 +174,7 @@ PanelWindow {
                 id: appList
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                
+
                 visible: count > 0
                 model: root.filteredApps
                 clip: true
@@ -155,7 +189,10 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         onEntered: appList.currentIndex = index
-                        onClicked: { modelData.execute(); root.visible = false }
+                        onClicked: {
+                            modelData.execute();
+                            globalState.launcherOpen = false;
+                        }
                     }
 
                     Rectangle {
@@ -163,12 +200,12 @@ PanelWindow {
                         anchors.margins: 4
                         radius: 6
                         color: ListView.isCurrentItem ? Qt.rgba(colors.muted.r, colors.muted.g, colors.muted.b, 0.3) : "transparent"
-                        
+
                         Rectangle {
                             width: 3
                             height: 20
                             radius: 2
-                            color: colors.cyan 
+                            color: colors.cyan
                             anchors.left: parent.left
                             anchors.leftMargin: 6
                             anchors.verticalCenter: parent.verticalCenter
@@ -187,8 +224,9 @@ PanelWindow {
                             Layout.preferredHeight: 22
                             fillMode: Image.PreserveAspectFit
                             source: {
-                                if (modelData.icon.indexOf("/") !== -1) return "file://" + modelData.icon
-                                return "image://icon/" + modelData.icon
+                                if (modelData.icon.indexOf("/") !== -1)
+                                    return "file://" + modelData.icon;
+                                return "image://icon/" + modelData.icon;
                             }
                         }
 

@@ -41,6 +41,9 @@ ShellRoot {
     LayoutService {
         id: layoutService
     }
+    GlobalState {
+        id: appState
+    }
 
     // --- Config ---
     property string fontFamily: "JetBrainsMono Nerd Font"
@@ -61,29 +64,34 @@ ShellRoot {
     // --- Launcher & Clipboard ---
     AppLauncher {
         id: launcher
-        visible: false
         colors: colors
+        globalState: appState
     }
 
     Clipboard {
         id: clipboard
+        globalState: appState
+        colors: colors
     }
 
     // --- IPC Handlers ---
+    // Launcher Toggle
     IpcHandler {
         target: "launcher"
         function toggle() {
-            launcher.visible = !launcher.visible;
+            appState.toggleLauncher();
         }
     }
 
+    // Clipboard Toggle
     IpcHandler {
         target: "clipboard"
         function toggle() {
-            clipboard.visible = !clipboard.visible;
+            appState.toggleClipboard();
         }
     }
 
+    // Cliphist Update (Keeps refreshing logic separate)
     IpcHandler {
         target: "cliphistService"
         function update() {
