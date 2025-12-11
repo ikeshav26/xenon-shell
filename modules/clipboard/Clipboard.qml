@@ -4,7 +4,7 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Wayland
 import Quickshell.Io
-import "../core"
+import "../../core"
 
 PanelWindow {
     id: root

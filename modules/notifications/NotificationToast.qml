@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects // Required for DropShadow
 import Quickshell
 import Quickshell.Wayland
-import "../core"
+import "../../core"
 
 PanelWindow {
     id: toast

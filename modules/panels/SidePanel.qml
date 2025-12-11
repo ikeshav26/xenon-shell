@@ -4,8 +4,8 @@ import QtQuick.Controls
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
-import "../core"
-import "../notifications"
+import "../../core"
+import "../../notifications"
 
 PanelWindow {
     id: root

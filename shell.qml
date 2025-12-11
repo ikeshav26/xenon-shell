@@ -3,14 +3,14 @@ pragma ComponentBehavior: Bound
 import Quickshell
 import Quickshell.Io
 import QtQuick
-import "bar"
-import "core"
-import "background"
 import "services"
-import "launcher"
-import "clipboard"
-import "notifications"
-import "panels"
+import "core"
+import "modules/bar"
+import "modules/background"
+import "modules/launcher"
+import "modules/clipboard"
+import "modules/notifications"
+import "modules/panels"
 
 ShellRoot {
     id: root
