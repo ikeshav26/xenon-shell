@@ -260,14 +260,28 @@ PanelWindow {
                         rowSpacing: 12
                         columnSpacing: 12
 
-                        ToggleButton {
-                            label: "WiFi"
-                            sublabel: "Connected"
-                            icon: "󰖩"
-                            active: true
-                            showChevron: true
-                            theme: theme
+                        Item {
                             Layout.fillWidth: true
+                            implicitHeight: theme.toggleHeight
+                            
+                            ToggleButton {
+                                id: wifiButton
+                                anchors.fill: parent
+                                label: "WiFi"
+                                sublabel: "Connected"
+                                icon: "󰖩"
+                                active: true
+                                showChevron: true
+                                theme: theme
+                            }
+                            
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: {
+                                    wifiModal.isOpen = !wifiModal.isOpen
+                                }
+                            }
                         }
 
                         ToggleButton {
@@ -525,5 +539,14 @@ PanelWindow {
 
     PowerMenu {
         id: powerMenu
+    }
+
+    WifiModal {
+        id: wifiModal
+        anchors.fill: content
+        theme: theme
+        globalState: root.globalState
+        z: 100
+        onClose: wifiModal.isOpen = false
     }
 }
