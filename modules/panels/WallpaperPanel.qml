@@ -16,8 +16,8 @@ PanelWindow {
         top: true
         left: true
         right: true
+        bottom: true
     }
-    height: 600
     visible: globalState.wallpaperPanelOpen
     
     WlrLayershell.layer: WlrLayer.Overlay
@@ -93,319 +93,342 @@ PanelWindow {
         }
     }
     
-    // Click outside to close - background layer
-    MouseArea {
-        anchors.fill: parent
-        onClicked: {
-            globalState.wallpaperPanelOpen = false
-        }
-        z: 0
-    }
-    
-    // Main panel - centered below bar
+    // Full screen background with blur effect
     Rectangle {
-        id: panelContent
-        z: 1
-        
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.top: parent.top
-        anchors.topMargin: 65
-        
-        width: Math.min(950, parent.width - 80)
-        height: 580
-        
-        color: theme.bg
-        radius: 20
-        border.color: Qt.rgba(theme.purple.r, theme.purple.g, theme.purple.b, 0.15)
-        border.width: 2
-        
+        anchors.fill: parent
+        color: Qt.rgba(0, 0, 0, 0.4)
         opacity: globalState.wallpaperPanelOpen ? 1 : 0
-        scale: globalState.wallpaperPanelOpen ? 1 : 0.95
         
         Behavior on opacity {
             NumberAnimation {
-                duration: 250
+                duration: 150
+                easing.type: Easing.OutCubic
+            }
+        }
+        
+        // Click anywhere outside panel to close
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                globalState.wallpaperPanelOpen = false
+            }
+            enabled: globalState.wallpaperPanelOpen
+        }
+    }
+    
+    // Main panel - Dolphin-inspired design
+    Rectangle {
+        id: panelContent
+        
+        anchors.centerIn: parent
+        
+        width: Math.min(1100, parent.width - 100)
+        height: Math.min(700, parent.height - 100)
+        
+        color: theme.bg
+        radius: 12
+        border.color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.1)
+        border.width: 1
+        
+        // Faster open animation
+        opacity: globalState.wallpaperPanelOpen ? 1 : 0
+        scale: globalState.wallpaperPanelOpen ? 1 : 0.97
+        
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 150
                 easing.type: Easing.OutCubic
             }
         }
         
         Behavior on scale {
             NumberAnimation {
-                duration: 250
+                duration: 150
                 easing.type: Easing.OutCubic
             }
         }
         
+        // Prevent clicks from propagating to background
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {}
+            hoverEnabled: false
+        }
+        
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 24
-            spacing: 16
+            spacing: 0
             
-            // Header
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 14
-                
-                Rectangle {
-                    width: 44
-                    height: 44
-                    radius: 12
-                    color: Qt.rgba(theme.purple.r, theme.purple.g, theme.purple.b, 0.15)
-                    
-                    Text {
-                        anchors.centerIn: parent
-                        text: "󰋩"
-                        font.family: "Symbols Nerd Font"
-                        font.pixelSize: 26
-                        color: theme.purple
-                    }
-                }
-                
-                ColumnLayout {
-                    spacing: 2
-                    
-                    Text {
-                        text: "Wallpaper Selector"
-                        font.pixelSize: 22
-                        font.bold: true
-                        color: theme.fg
-                    }
-                    
-                    Text {
-                        text: "Choose your desktop wallpaper"
-                        font.pixelSize: 13
-                        color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.6)
-                    }
-                }
-                
-                Item { Layout.fillWidth: true }
-                
-                // Close button
-                Rectangle {
-                    width: 44
-                    height: 44
-                    radius: 12
-                    color: closeArea.containsMouse ? Qt.rgba(theme.red.r, theme.red.g, theme.red.b, 0.2) : Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.05)
-                    
-                    Behavior on color {
-                        ColorAnimation { duration: 150 }
-                    }
-                    
-                    Text {
-                        anchors.centerIn: parent
-                        text: ""
-                        font.family: "Symbols Nerd Font"
-                        font.pixelSize: 20
-                        color: closeArea.containsMouse ? theme.red : theme.fg
-                        
-                        Behavior on color {
-                            ColorAnimation { duration: 150 }
-                        }
-                    }
-                    
-                    MouseArea {
-                        id: closeArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: globalState.wallpaperPanelOpen = false
-                    }
-                }
-            }
-            
+            // Header bar - Dolphin style
             Rectangle {
                 Layout.fillWidth: true
-                height: 1
-                color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.1)
-            }
-            
-            // Search bar
-            Rectangle {
-                Layout.fillWidth: true
-                height: 48
-                radius: 12
-                color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.03)
-                border.color: searchInput.activeFocus ? theme.purple : Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.08)
-                border.width: 2
+                Layout.preferredHeight: 56
+                color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.02)
                 
-                Behavior on border.color {
-                    ColorAnimation { duration: 150 }
+                Rectangle {
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.bottom: parent.bottom
+                    height: 1
+                    color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.08)
                 }
                 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 12
-                    spacing: 12
+                    anchors.leftMargin: 20
+                    anchors.rightMargin: 20
+                    spacing: 16
                     
-                    Text {
-                        text: ""
-                        font.family: "Symbols Nerd Font"
-                        font.pixelSize: 18
-                        color: theme.purple
-                    }
-                    
-                    TextInput {
-                        id: searchInput
-                        Layout.fillWidth: true
-                        verticalAlignment: Text.AlignVCenter
-                        color: theme.fg
-                        font.pixelSize: 14
-                        selectByMouse: true
-                        clip: true
+                    // Icon and title
+                    RowLayout {
+                        spacing: 12
                         
                         Text {
-                            anchors.fill: parent
-                            text: "Search wallpapers..."
-                            color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.4)
-                            font.pixelSize: parent.font.pixelSize
-                            visible: !parent.text && !parent.activeFocus
+                            text: "󰋩"
+                            font.family: "Symbols Nerd Font"
+                            font.pixelSize: 24
+                            color: theme.purple
+                        }
+                        
+                        Text {
+                            text: "Wallpapers"
+                            font.pixelSize: 16
+                            font.weight: Font.DemiBold
+                            color: theme.fg
+                        }
+                    }
+                    
+                    Item { Layout.fillWidth: true }
+                    
+                    // Action buttons
+                    RowLayout {
+                        spacing: 8
+                        
+                        // Refresh button
+                        Rectangle {
+                            width: 32
+                            height: 32
+                            radius: 6
+                            color: refreshArea.containsMouse ? Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.08) : "transparent"
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 100 }
+                            }
+                            
+                            Text {
+                                anchors.centerIn: parent
+                                text: ""
+                                font.family: "Symbols Nerd Font"
+                                font.pixelSize: 16
+                                color: theme.fg
+                            }
+                            
+                            MouseArea {
+                                id: refreshArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: WallpaperService.refreshWallpapersList()
+                            }
+                        }
+                        
+                        Rectangle {
+                            width: 1
+                            height: 24
+                            color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.1)
+                        }
+                        
+                        // Close button
+                        Rectangle {
+                            width: 32
+                            height: 32
+                            radius: 6
+                            color: closeArea.containsMouse ? Qt.rgba(theme.red.r, theme.red.g, theme.red.b, 0.15) : "transparent"
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 100 }
+                            }
+                            
+                            Text {
+                                anchors.centerIn: parent
+                                text: ""
+                                font.family: "Symbols Nerd Font"
+                                font.pixelSize: 16
+                                color: closeArea.containsMouse ? theme.red : theme.fg
+                                
+                                Behavior on color {
+                                    ColorAnimation { duration: 100 }
+                                }
+                            }
+                            
+                            MouseArea {
+                                id: closeArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: globalState.wallpaperPanelOpen = false
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Content area
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.margins: 20
+                spacing: 16
+                
+                // Search bar - Dolphin style
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 40
+                    radius: 6
+                    color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.04)
+                    border.color: searchInput.activeFocus ? theme.purple : Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.12)
+                    border.width: 1
+                    
+                    Behavior on border.color {
+                        ColorAnimation { duration: 150 }
+                    }
+                    
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
+                        spacing: 8
+                        
+                        Text {
+                            text: ""
+                            font.family: "Symbols Nerd Font"
+                            font.pixelSize: 16
+                            color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.5)
+                        }
+                        
+                        TextInput {
+                            id: searchInput
+                            Layout.fillWidth: true
                             verticalAlignment: Text.AlignVCenter
-                        }
-                        
-                        onTextChanged: {
-                            filterText = text;
-                            updateFiltered();
-                        }
-                        
-                        Keys.onEscapePressed: {
-                            text = "";
-                            focus = false;
-                        }
-                        
-                        Keys.onDownPressed: {
-                            if (wallpaperGrid.count > 0) {
-                                wallpaperGrid.forceActiveFocus();
-                                if (wallpaperGrid.currentIndex < 0) {
-                                    wallpaperGrid.currentIndex = 0;
+                            color: theme.fg
+                            font.pixelSize: 13
+                            selectByMouse: true
+                            clip: true
+                            
+                            Text {
+                                anchors.fill: parent
+                                text: "Search wallpapers..."
+                                color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.4)
+                                font.pixelSize: parent.font.pixelSize
+                                visible: !parent.text && !parent.activeFocus
+                                verticalAlignment: Text.AlignVCenter
+                            }
+                            
+                            onTextChanged: {
+                                filterText = text;
+                                updateFiltered();
+                            }
+                            
+                            Keys.onEscapePressed: {
+                                text = "";
+                                focus = false;
+                            }
+                            
+                            Keys.onDownPressed: {
+                                if (wallpaperGrid.count > 0) {
+                                    wallpaperGrid.forceActiveFocus();
+                                    if (wallpaperGrid.currentIndex < 0) {
+                                        wallpaperGrid.currentIndex = 0;
+                                    }
                                 }
                             }
                         }
-                    }
-                    
-                    // Clear search button
-                    Rectangle {
-                        width: 24
-                        height: 24
-                        radius: 12
-                        color: clearArea.containsMouse ? Qt.rgba(theme.red.r, theme.red.g, theme.red.b, 0.15) : "transparent"
-                        visible: searchInput.text !== ""
                         
-                        Text {
-                            anchors.centerIn: parent
-                            text: ""
-                            font.family: "Symbols Nerd Font"
-                            font.pixelSize: 14
-                            color: theme.fg
-                        }
-                        
-                        MouseArea {
-                            id: clearArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: searchInput.text = ""
-                        }
-                    }
-                    
-                    // Refresh button
-                    Rectangle {
-                        width: 36
-                        height: 36
-                        radius: 8
-                        color: refreshArea.containsMouse ? Qt.rgba(theme.green.r, theme.green.g, theme.green.b, 0.15) : Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.05)
-                        
-                        Behavior on color {
-                            ColorAnimation { duration: 150 }
-                        }
-                        
-                        Text {
-                            anchors.centerIn: parent
-                            text: ""
-                            font.family: "Symbols Nerd Font"
-                            font.pixelSize: 18
-                            color: theme.green
-                            rotation: refreshArea.containsPress ? 180 : 0
+                        // Clear search button
+                        Rectangle {
+                            width: 20
+                            height: 20
+                            radius: 10
+                            color: clearArea.containsMouse ? Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.1) : "transparent"
+                            visible: searchInput.text !== ""
                             
-                            Behavior on rotation {
-                                NumberAnimation { duration: 200 }
+                            Text {
+                                anchors.centerIn: parent
+                                text: ""
+                                font.family: "Symbols Nerd Font"
+                                font.pixelSize: 12
+                                color: theme.fg
+                            }
+                            
+                            MouseArea {
+                                id: clearArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: searchInput.text = ""
                             }
                         }
-                        
-                        MouseArea {
-                            id: refreshArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: WallpaperService.refreshWallpapersList()
-                        }
                     }
                 }
-            }
-            
-            // Info bar
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 8
                 
-                Text {
-                    text: ""
-                    font.family: "Symbols Nerd Font"
-                    font.pixelSize: 14
-                    color: theme.purple
-                }
-                
-                Text {
-                    text: filteredWallpapers.length + " wallpapers" + (filterText ? " (filtered from " + wallpapersList.length + ")" : "")
-                    font.pixelSize: 13
-                    font.bold: true
-                    color: theme.fg
-                }
-                
-                Rectangle {
-                    width: 3
-                    height: 3
-                    radius: 1.5
-                    color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.3)
-                }
-                
-                Text {
-                    text: wallpaperPath
-                    font.pixelSize: 12
-                    color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.5)
-                    elide: Text.ElideMiddle
+                // Info bar
+                RowLayout {
                     Layout.fillWidth: true
+                    spacing: 8
+                    
+                    Text {
+                        text: filteredWallpapers.length + " items" + (filterText ? " · " + wallpapersList.length + " total" : "")
+                        font.pixelSize: 12
+                        color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.6)
+                    }
+                    
+                    Item { Layout.fillWidth: true }
+                    
+                    Text {
+                        text: wallpaperPath
+                        font.pixelSize: 11
+                        color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.5)
+                        elide: Text.ElideMiddle
+                        Layout.maximumWidth: 300
+                    }
                 }
-            }
-            
-            // Wallpaper grid
-            ScrollView {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                clip: true
                 
-                ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                ScrollBar.vertical.policy: ScrollBar.AsNeeded
-                
-                background: Rectangle {
-                    color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.02)
-                    radius: 12
-                }
-                
+                // Wallpaper grid with buttery smooth scrolling
                 GridView {
                     id: wallpaperGrid
-                    anchors.fill: parent
-                    anchors.margins: 12
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
                     
-                    property int columns: 4
-                    cellWidth: Math.floor((width - 24) / columns)
-                    cellHeight: Math.floor(cellWidth * 0.7) + 40
+                    property int columns: 5
+                    cellWidth: Math.floor(width / columns)
+                    cellHeight: Math.floor(cellWidth * 0.65) + 60
                     
                     model: filteredWallpapers
                     clip: true
                     focus: true
                     keyNavigationEnabled: true
                     
-                    cacheBuffer: 500
+                    // Optimized cache for smooth scrolling
+                    cacheBuffer: cellHeight * 3
+                    displayMarginBeginning: cellHeight * 2
+                    displayMarginEnd: cellHeight * 2
+                    
+                    // Performance optimizations
+                    reuseItems: true
+                    
+                    // Butter-smooth native scrolling
+                    flickDeceleration: 5000
+                    maximumFlickVelocity: 2500
+                    boundsBehavior: Flickable.DragAndOvershootBounds
+                    
+                    // Smooth rebound animation
+                    rebound: Transition {
+                        NumberAnimation {
+                            properties: "x,y"
+                            duration: 250
+                            easing.type: Easing.OutQuad
+                        }
+                    }
                     
                     // Keyboard navigation
                     Keys.onReturnPressed: {
@@ -428,33 +451,32 @@ PanelWindow {
                         }
                     }
                     
-                    // Auto-scroll to keep current item visible
-                    onCurrentIndexChanged: {
-                        if (currentIndex >= 0) {
-                            var row = Math.floor(currentIndex / columns);
-                            var itemY = row * cellHeight;
-                            var viewportTop = contentY;
-                            var viewportBottom = viewportTop + height;
-                            
-                            if (itemY < viewportTop) {
-                                contentY = Math.max(0, itemY - cellHeight);
-                            } else if (itemY + cellHeight > viewportBottom) {
-                                contentY = itemY + cellHeight - height + cellHeight;
-                            }
-                        }
-                    }
-                    
+                    // Minimal scrollbar
                     ScrollBar.vertical: ScrollBar {
                         policy: ScrollBar.AsNeeded
-                        width: 8
+                        width: 6
+                        anchors.right: parent.right
+                        anchors.rightMargin: 2
                         
                         contentItem: Rectangle {
-                            radius: 4
-                            color: Qt.rgba(theme.purple.r, theme.purple.g, theme.purple.b, 0.5)
+                            implicitWidth: 6
+                            radius: 3
+                            color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 
+                                parent.pressed ? 0.4 : parent.hovered ? 0.3 : 0.2)
+                            
+                            Behavior on color {
+                                ColorAnimation { duration: 100 }
+                            }
+                        }
+                        
+                        background: Rectangle {
+                            color: "transparent"
                         }
                     }
                     
+                    // Optimized delegate with minimal animations
                     delegate: Item {
+                        id: delegateRoot
                         width: wallpaperGrid.cellWidth
                         height: wallpaperGrid.cellHeight
                         
@@ -468,134 +490,125 @@ PanelWindow {
                         
                         Rectangle {
                             anchors.fill: parent
-                            anchors.margins: 8
-                            radius: 14
-                            color: theme.bg
+                            anchors.margins: 10
+                            radius: 8
+                            color: "transparent"
                             clip: true
                             
-                            border.color: {
-                                if (isSelected) return theme.green;
-                                if (isCurrent) return theme.purple;
-                                return Qt.rgba(theme.purple.r, theme.purple.g, theme.purple.b, hoverBorder.opacity);
-                            }
-                            border.width: isSelected || isCurrent ? 3 : 2
-                            
-                            scale: (hoverArea.containsMouse || isCurrent) ? 1.03 : 1
-                            
-                            Behavior on border.color {
-                                ColorAnimation { duration: 200 }
-                            }
-                            
-                            Behavior on scale {
-                                NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
-                            }
-                            
+                            // Simple background - no animations
                             Rectangle {
-                                id: hoverBorder
                                 anchors.fill: parent
-                                radius: 14
-                                color: "transparent"
-                                opacity: hoverArea.containsMouse ? 0.3 : 0
-                                
-                                Behavior on opacity {
-                                    NumberAnimation { duration: 200 }
+                                radius: 8
+                                color: {
+                                    if (isSelected) return Qt.rgba(theme.green.r, theme.green.g, theme.green.b, 0.08)
+                                    if (isCurrent) return Qt.rgba(theme.purple.r, theme.purple.g, theme.purple.b, 0.08)
+                                    if (hoverArea.containsMouse) return Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.04)
+                                    return "transparent"
                                 }
                             }
                             
-                            Image {
-                                id: wallpaperImage
+                            ColumnLayout {
                                 anchors.fill: parent
-                                anchors.margins: 3
-                                source: "file://" + wallpaperPath
-                                fillMode: Image.PreserveAspectCrop
-                                asynchronous: true
-                                smooth: true
-                                cache: false
+                                spacing: 6
                                 
-                                // Loading indicator
+                                // Image container
                                 Rectangle {
-                                    anchors.fill: parent
-                                    color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.6)
-                                    visible: wallpaperImage.status === Image.Loading
-                                    radius: 11
+                                    Layout.fillWidth: true
+                                    Layout.fillHeight: true
+                                    radius: 6
+                                    color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.03)
+                                    clip: true
                                     
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "󰔟"
-                                        font.family: "Symbols Nerd Font"
-                                        font.pixelSize: 28
-                                        color: theme.purple
+                                    border.color: {
+                                        if (isSelected) return theme.green
+                                        if (isCurrent) return theme.purple
+                                        return Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.12)
+                                    }
+                                    border.width: (isSelected || isCurrent) ? 2 : 1
+                                    
+                                    // Optimized image loading
+                                    Image {
+                                        id: wallpaperImage
+                                        anchors.fill: parent
+                                        anchors.margins: 1
+                                        source: "file://" + wallpaperPath
+                                        fillMode: Image.PreserveAspectCrop
+                                        asynchronous: true
+                                        smooth: false  // Faster rendering
+                                        cache: true
+                                        sourceSize.width: 400  // Downsample for performance
+                                        sourceSize.height: 300
                                         
-                                        SequentialAnimation on opacity {
-                                            running: wallpaperImage.status === Image.Loading
-                                            loops: Animation.Infinite
-                                            NumberAnimation { from: 0.3; to: 1.0; duration: 600 }
-                                            NumberAnimation { from: 1.0; to: 0.3; duration: 600 }
+                                        // Simple loading indicator
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 32
+                                            height: 32
+                                            radius: 16
+                                            color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.8)
+                                            visible: wallpaperImage.status === Image.Loading
+                                            
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "󰔟"
+                                                font.family: "Symbols Nerd Font"
+                                                font.pixelSize: 18
+                                                color: theme.purple
+                                            }
+                                        }
+                                        
+                                        // Error state
+                                        Rectangle {
+                                            anchors.centerIn: parent
+                                            width: 32
+                                            height: 32
+                                            radius: 16
+                                            color: Qt.rgba(theme.red.r, theme.red.g, theme.red.b, 0.1)
+                                            visible: wallpaperImage.status === Image.Error
+                                            
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: ""
+                                                font.family: "Symbols Nerd Font"
+                                                font.pixelSize: 16
+                                                color: theme.red
+                                            }
+                                        }
+                                    }
+                                    
+                                    // Selected checkmark
+                                    Rectangle {
+                                        anchors.top: parent.top
+                                        anchors.right: parent.right
+                                        anchors.margins: 6
+                                        width: 24
+                                        height: 24
+                                        radius: 12
+                                        color: theme.green
+                                        visible: isSelected
+                                        
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: ""
+                                            font.family: "Symbols Nerd Font"
+                                            font.pixelSize: 14
+                                            color: "white"
                                         }
                                     }
                                 }
                                 
-                                // Error indicator
-                                Rectangle {
-                                    anchors.fill: parent
-                                    color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.8)
-                                    visible: wallpaperImage.status === Image.Error
-                                    radius: 11
-                                    
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: ""
-                                        font.family: "Symbols Nerd Font"
-                                        font.pixelSize: 28
-                                        color: theme.red
-                                    }
-                                }
-                            }
-                            
-                            // Selected indicator
-                            Rectangle {
-                                anchors.top: parent.top
-                                anchors.right: parent.right
-                                anchors.margins: 8
-                                width: 28
-                                height: 28
-                                radius: 14
-                                color: theme.green
-                                visible: isSelected
-                                
+                                // Filename
                                 Text {
-                                    anchors.centerIn: parent
-                                    text: ""
-                                    font.family: "Symbols Nerd Font"
-                                    font.pixelSize: 16
-                                    color: theme.bg
-                                }
-                            }
-                            
-                            // Name overlay with gradient
-                            Rectangle {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.bottom: parent.bottom
-                                height: 38
-                                radius: 14
-                                
-                                gradient: Gradient {
-                                    GradientStop { position: 0.0; color: "transparent" }
-                                    GradientStop { position: 0.3; color: Qt.rgba(0, 0, 0, 0.6) }
-                                    GradientStop { position: 1.0; color: Qt.rgba(0, 0, 0, 0.85) }
-                                }
-                                
-                                Text {
-                                    anchors.centerIn: parent
-                                    anchors.verticalCenterOffset: 4
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 36
                                     text: filename
-                                    color: "white"
+                                    color: theme.fg
                                     font.pixelSize: 11
-                                    font.bold: true
                                     elide: Text.ElideMiddle
-                                    width: parent.width - 24
                                     horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    wrapMode: Text.Wrap
+                                    maximumLineCount: 2
                                 }
                             }
                             
@@ -621,27 +634,27 @@ PanelWindow {
                         
                         ColumnLayout {
                             anchors.centerIn: parent
-                            spacing: 12
+                            spacing: 16
                             
                             Text {
                                 text: ""
                                 font.family: "Symbols Nerd Font"
-                                font.pixelSize: 48
-                                color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.3)
+                                font.pixelSize: 64
+                                color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.2)
                                 Layout.alignment: Qt.AlignHCenter
                             }
                             
                             Text {
                                 text: filterText ? "No matching wallpapers" : "No wallpapers found"
                                 font.pixelSize: 16
-                                font.bold: true
+                                font.weight: Font.DemiBold
                                 color: theme.fg
                                 Layout.alignment: Qt.AlignHCenter
                             }
                             
                             Text {
-                                text: filterText ? "Try a different search" : "Add images to " + wallpaperPath
-                                font.pixelSize: 13
+                                text: filterText ? "Try a different search term" : "Add images to " + wallpaperPath
+                                font.pixelSize: 12
                                 color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.6)
                                 Layout.alignment: Qt.AlignHCenter
                             }
@@ -655,7 +668,7 @@ PanelWindow {
                         
                         ColumnLayout {
                             anchors.centerIn: parent
-                            spacing: 12
+                            spacing: 16
                             
                             Text {
                                 text: "󰔟"
@@ -664,19 +677,17 @@ PanelWindow {
                                 color: theme.purple
                                 Layout.alignment: Qt.AlignHCenter
                                 
-                                SequentialAnimation on opacity {
+                                SequentialAnimation on rotation {
                                     running: WallpaperService.scanning
                                     loops: Animation.Infinite
-                                    NumberAnimation { from: 0.3; to: 1.0; duration: 600 }
-                                    NumberAnimation { from: 1.0; to: 0.3; duration: 600 }
+                                    NumberAnimation { from: 0; to: 360; duration: 1000 }
                                 }
                             }
                             
                             Text {
                                 text: "Scanning wallpapers..."
-                                font.pixelSize: 16
-                                font.bold: true
-                                color: theme.fg
+                                font.pixelSize: 14
+                                color: Qt.rgba(theme.fg.r, theme.fg.g, theme.fg.b, 0.7)
                                 Layout.alignment: Qt.AlignHCenter
                             }
                         }
