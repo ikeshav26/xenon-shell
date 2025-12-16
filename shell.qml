@@ -82,6 +82,10 @@ ShellRoot {
         globalState: appState
     }
 
+    InfoPanel {
+        globalState: appState
+    }
+
     // --- Background (Wallpaper) ---
     Background {}
 
@@ -143,6 +147,14 @@ ShellRoot {
         target: "powermenu"
         function toggle() {
             appState.togglePowerMenu();
+        }
+    }
+
+    // Info Panel Toggle
+    IpcHandler {
+        target: "infopanel"
+        function toggle() {
+            appState.toggleInfoPanel();
         }
     }
 

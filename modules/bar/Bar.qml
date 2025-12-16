@@ -73,6 +73,42 @@ Rectangle {
 
         VerticalDivider {}
 
+          // Info Panel Button
+        Rectangle {
+            Layout.preferredHeight: 26
+            Layout.preferredWidth: 26
+            radius: height / 2
+            color: "transparent"
+            border.color: colors.muted
+            border.width: 1
+            
+            Text {
+                anchors.centerIn: parent
+                text: "󰃰"
+                font.pixelSize: 16
+                font.family: "Symbols Nerd Font"
+                color: colors.blue
+            }
+            
+            Process {
+                id: infoPanelIpcProcess
+                command: ["quickshell", "ipc", "-c", "mannu", "call", "infopanel", "toggle"]
+            }
+            
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                hoverEnabled: true
+                
+                onEntered: parent.color = Qt.rgba(colors.blue.r, colors.blue.g, colors.blue.b, 0.2)
+                onExited: parent.color = "transparent"
+                
+                onClicked: {
+                    infoPanelIpcProcess.running = true
+                }
+            }
+        }
+
         // --- WORKSPACE CAROUSEL ---
         Rectangle {
             id: wsContainer
@@ -312,6 +348,8 @@ Rectangle {
                 font.bold: true
             }
         }
+
+      
 
         // Power Menu Button
         Rectangle {

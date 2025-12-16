@@ -9,6 +9,7 @@ QtObject {
     property bool sidePanelOpen: false
     property bool wallpaperPanelOpen: false
     property bool powerMenuOpen: false
+    property bool infoPanelOpen: false
     
     // --- Actions ---
     function toggleLauncher() {
@@ -58,11 +59,21 @@ QtObject {
         }
     }
 
+    function toggleInfoPanel() {
+        if (infoPanelOpen) {
+            infoPanelOpen = false;
+        } else {
+            closeAll();
+            infoPanelOpen = true;
+        }
+    }
+
     function closeAll() {
         launcherOpen = false;
         clipboardOpen = false;
         sidePanelOpen = false;
         wallpaperPanelOpen = false;
         powerMenuOpen = false;
+        infoPanelOpen = false;
     }
 }
