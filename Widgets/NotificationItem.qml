@@ -15,12 +15,18 @@ Rectangle {
     property var theme
 
     width: ListView.view ? ListView.view.width : 400
-    height: theme ? theme.notificationHeight : 80
+    // Use dynamic height based on content, with fallback minimum
+    implicitHeight: Math.max(80, mainLayout.implicitHeight + 32)
+    height: implicitHeight
+    
     color: theme ? theme.surface : "#252932"
     radius: 12
 
     RowLayout {
-        anchors.fill: parent
+        id: mainLayout
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.top: parent.top
         anchors.margins: 16
         spacing: 12
 
@@ -30,6 +36,7 @@ Rectangle {
             Layout.preferredHeight: 40
             color: theme ? theme.tile : "#2F333D"
             radius: 8
+            Layout.alignment: Qt.AlignTop
 
             Image {
                 id: notifIcon
@@ -78,6 +85,7 @@ Rectangle {
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 4
+            Layout.alignment: Qt.AlignTop
 
             Text {
                 text: summary
@@ -85,6 +93,8 @@ Rectangle {
                 font.pixelSize: 14
                 font.weight: Font.Medium
                 elide: Text.ElideRight
+                wrapMode: Text.Wrap
+                maximumLineCount: 2
                 Layout.fillWidth: true
             }
 
@@ -93,8 +103,10 @@ Rectangle {
                 color: theme ? theme.secondary : "#9BA3B8"
                 font.pixelSize: 13
                 elide: Text.ElideRight
-                maximumLineCount: 1
+                wrapMode: Text.Wrap
+                maximumLineCount: 3
                 Layout.fillWidth: true
+                visible: text !== ""
             }
         }
 
@@ -102,6 +114,7 @@ Rectangle {
         Rectangle {
             Layout.preferredWidth: 24
             Layout.preferredHeight: 24
+            Layout.alignment: Qt.AlignTop
             color: closeArea.containsMouse ? (theme ? theme.tile : "#2F333D") : "transparent"
             radius: 12
 

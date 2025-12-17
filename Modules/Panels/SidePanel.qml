@@ -7,567 +7,418 @@ import Quickshell.Wayland
 import qs.Core
 import qs.Widgets
 import qs.Modules.Notifications
+import "Views" as Views
 
 PanelWindow {
     id: root
+    
+    // Position on the right side
+    anchors {
+        top: true
+        bottom: true
+        right: true
+    }
+    
+    implicitWidth: Screen.width
+    implicitHeight: Screen.height
+    
+    color: "transparent"
+    
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.exclusiveZone: -1
+    
+    // Removed redundant MouseArea/mask definitions as they were updated in previous step
+    // But need to make sure I don't leave duplicate blocks.
+    // The previous edit to SidePanel.qml replaced the timer block AND prepended the MouseArea/Mask logic.
+    // So I should check if I need to delete the old one.
+    // Ah, the previous `replace_file_content` targeted StartLine 117 endLine 141 (Timers) but inserted a huge block.
+    // Let me check if strict duplication happened.
+    // Actually, line 26-50 has the OLD MouseArea and mask logic. I need to remove that if I moved it down or update it there.
+    // I put the new logic near the top in the previous edit (lines 117+). Ideally mask logic should be near the top.
+    // I will remove the old mask logic at lines 26-50.
 
-    required property var globalState
-    required property var notifManager
-
-    readonly property var removeNotification: function(id) {
-        notifManager.removeById(id)
+    
+    Region {
+        id: fullMask
+        regions: [
+            Region {
+                x: 0
+                y: 0
+                width: root.width
+                height: root.height
+            }
+        ]
     }
 
-    // Expandable state
-    property bool isExpanded: false
+    Region {
+        id: splitMask
+        regions: [
+            Region {
+                x: controlBox.x
+                y: controlBox.y
+                width: controlBox.width
+                height: controlBox.height
+            },
+            Region {
+                x: notifBox.x
+                y: notifBox.y
+                width: notifBox.width
+                height: notifBox.height
+            },
+            // Static Peek Strips
+            Region {
+                x: root.width - root.peekWidth
+                y: controlBox.y
+                width: root.peekWidth
+                height: controlBox.height
+            },
+            Region {
+                x: root.width - root.peekWidth
+                y: notifBox.y
+                width: root.peekWidth
+                height: notifBox.height
+            }
+        ]
+    }
+
+    // Required properties
+    required property var globalState
+    required property var notifManager
+    property alias theme: theme
 
     QtObject {
         id: theme
-
-        property color bg:                "#1A1D26"
-        property color surface:           "#252932"
-        property color tile:              "#2F333D"
-        property color tileActive:        "#CBA6F7"
-        property color tileActiveAlt:     "#C4B5FD"
-        property color border:            "#2F333D"
-        property color text:              "#E8EAF0"
-        property color secondary:         "#9BA3B8"
-        property color muted:             "#6B7280"
-        property color iconMuted:         "#70727C"
-        property color iconActive:        "#FFFFFF"
-        property color accent:            "#A78BFA"
-        property color accentHover:       "#C4B5FD"
-        property color accentActive:      "#CBA6F7"
-        property color urgent:            "#EF4444"
-        property color sliderTrack:       "#3A3F4B"
-        property color sliderThumb:       "#FFFFFF"
-        property color sliderFill:        "#CBA6F7"
-
-        property int panelWidth:          420
-        property int borderRadius:        24
-        property int contentMargins:      28
-        property int spacing:             24
-        property int toggleHeight:        88
-        property int sliderHeight:        64
-        property int notificationHeight:  80
-        property int headerAvatarSize:    48
-        property int toggleIconSize:      24
-        property int sliderIconSize:      20
-        property int sectionSpacing:      32
+        property color bg:           "#1e1e2e"
+        property color surface:      "#313244" // Surface0
+        property color border:       "#45475a" // Surface1
+        property color text:         "#cdd6f4" // Text
+        property color subtext:      "#a6adc8" // Subtext0
+        property color secondary:    "#bac2de" // Subtext1
+        property color muted:        "#585b70" // Surface2
+        property color urgent:       "#f38ba8" // Red
+        property color accent:       "#89b4fa" // Blue
+        property color accentActive: "#89b4fa"
+        property color tileActive:   "#313244"
+        
+        property int borderRadius:   16
+        property int contentMargins: 16
+        property int spacing:        12
+    }
+    
+    // --- Layout State ---
+    
+    // Peeking width
+    readonly property int peekWidth: 10
+    // Full width of boxes
+    readonly property int boxWidth: 320
+    
+    // State trackers
+    property bool forcedOpen: false
+    property bool controlHovered: controlHandler.hovered || controlPeekHandler.hovered
+    property bool notifHovered: notifHandler.hovered || notifPeekHandler.hovered
+    
+    // Delayed closing to prevent jitter
+    property bool controlOpen: false
+    property bool notifOpen: false
+    
+    function show() {
+        forcedOpen = true
+        controlOpen = true
+        notifOpen = true
+    }
+    
+    function hide() {
+        forcedOpen = false
+        // Let hover logic take over, or force close
+        controlOpen = false
+        notifOpen = false
+        menuLoader.active = false
     }
 
-
-    anchors { top: true; bottom: true; left: true; right: true }
-    color: "transparent"
-
-    visible: root.globalState.sidePanelOpen || openAnim.running || closeAnim.running || slideTranslate.x < content.width
-
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.namespace: "matte-dashboard"
-    WlrLayershell.exclusiveZone: -1
-
-    Keys.onEscapePressed: {
-        globalState.sidePanelOpen = false
-    }
-
-    Connections {
-        target: root.globalState
-        function onSidePanelOpenChanged() {
-            if (root.globalState.sidePanelOpen) {
-                requestFocusTimer.start()
-            }
-        }
-    }
-
-    Timer {
-        id: requestFocusTimer
-        interval: 10
-        repeat: false
-    }
-
-    Rectangle {
+    // Mask logic
+    mask: (menuLoader.active || forcedOpen) ? fullMask : splitMask
+    
+    // Background Closer (Modal)
+    MouseArea {
         anchors.fill: parent
-        color: "black"
-        opacity: root.globalState.sidePanelOpen ? 0.5 : 0
-        Behavior on opacity { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
-
-        layer.enabled: true
-        layer.effect: FastBlur {
-            radius: root.globalState.sidePanelOpen ? 20 : 0
-            Behavior on radius { NumberAnimation { duration: 400; easing.type: Easing.OutCubic } }
+        z: -100
+        enabled: menuLoader.active || forcedOpen
+        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        onClicked: {
+            if (menuLoader.active) toggleMenu("")
+            if (forcedOpen) hide()
         }
     }
 
+    // De-bounce Timers
+    Timer {
+        id: controlTimer
+        interval: 100
+        repeat: false
+        running: !root.controlHovered && !menuLoader.active && !root.forcedOpen
+        onTriggered: root.controlOpen = false
+    }
+    
+    Timer {
+        id: notifTimer
+        interval: 100
+        repeat: false
+        running: !root.notifHovered && !root.forcedOpen
+        onTriggered: root.notifOpen = false
+    }
+    
+    /* Auto-open (immediate) - removed to rely simply on bindings again? 
+       Actually, mixing explicit timers + bindings + forcedOpen is complex.
+       Let's stick to the timers being the "closer" and hover being the "opener".
+    */
+    
+    onControlHoveredChanged: {
+        if (controlHovered) {
+            controlTimer.stop()
+            controlOpen = true
+        }
+    }
+    
+    onNotifHoveredChanged: {
+        if (notifHovered) {
+            notifTimer.stop()
+            notifOpen = true
+        }
+    }
+    
+    // Logic:
+    function getX(isOpen) {
+        return isOpen ? (root.width - root.boxWidth - 20) : (root.width - root.peekWidth)
+    }
+
+    // --- Control Box (Top) ---
     Rectangle {
-        id: content
-        width: theme.panelWidth
-
-        anchors.top: parent.top
-        anchors.bottom: parent.bottom
-        anchors.right: parent.right
-        anchors.topMargin: 65
-        anchors.bottomMargin: 15
-        anchors.rightMargin: 15
-
-        color: theme.bg
-        radius: theme.borderRadius
+        id: controlBox
+        width: root.boxWidth
+        
+        // Dynamic height based on content
+        height: contentCol.height + 32 // 16px top + 16px bottom padding
+        
+        y: 60 // Top margin to clear Top Bar
+        x: root.getX(root.controlOpen || menuLoader.active || root.forcedOpen)
+        
+        radius: 16
+        color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.95)
         border.width: 1
         border.color: theme.border
-        clip: true
-
+        
+        clip: true // Ensure content doesn't bleed during animation
+        
+        // Shadow
         layer.enabled: true
         layer.effect: DropShadow {
             transparentBorder: true
-            horizontalOffset: 0
-            verticalOffset: 8
-            radius: 32
-            samples: 33
-            color: Qt.rgba(0, 0, 0, 0.4)
+            radius: 16
+            samples: 17
+            color: "#40000000"
         }
 
-        transform: Translate {
-            id: slideTranslate
-            x: root.globalState.sidePanelOpen ? 0 : (content.width + 50)
-
-            Behavior on x {
-                animation: root.globalState.sidePanelOpen ? openAnim : closeAnim
-            }
-        }
-
-        SpringAnimation {
-            id: openAnim
-            spring: 4.0
-            damping: 0.2
-            epsilon: 0.1
-            mass: 0.5
-        }
-
-        NumberAnimation {
-            id: closeAnim
-            duration: 350
-            easing.type: Easing.OutQuart
-        }
-
-        Flickable {
-            anchors.fill: parent
-            anchors.margins: theme.contentMargins
-            contentHeight: contentLayout.implicitHeight
-            clip: true
-            interactive: true
-            boundsBehavior: Flickable.StopAtBounds
-            flickableDirection: Flickable.VerticalFlick
-
-            ColumnLayout {
-                id: contentLayout
+        Column {
+            id: contentCol
+            width: parent.width - 32
+            anchors.top: parent.top
+            anchors.topMargin: 16
+            anchors.horizontalCenter: parent.horizontalCenter
+            spacing: 0
+            
+            // Main Controls
+            Views.ControlBoxContent {
+                id: controlContent
                 width: parent.width
-                spacing: theme.spacing
-
-                RowLayout {
-                    Layout.fillWidth: true
-                    spacing: 16
-
-                    Rectangle {
-                        Layout.preferredWidth: theme.headerAvatarSize
-                        Layout.preferredHeight: theme.headerAvatarSize
-                        radius: 12
-
-                        gradient: Gradient {
-                            GradientStop { position: 0.0; color: theme.tileActive }
-                            GradientStop { position: 1.0; color: theme.accentActive }
-                        }
-
-                        layer.enabled: true
-                        layer.effect: DropShadow {
-                            transparentBorder: true
-                            horizontalOffset: 0
-                            verticalOffset: 2
-                            radius: 8
-                            samples: 17
-                            color: Qt.rgba(0, 0, 0, 0.3)
-                        }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "󰣇"
-                            font.pixelSize: 28
-                            font.family: "Symbols Nerd Font"
-                            color: "#FFFFFF"
-                        }
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        spacing: 4
-
-                        Text {
-                            text: Quickshell.env("USER")
-                            color: theme.text
-                            font.bold: true
-                            font.pixelSize: 18
-                            font.capitalization: Font.Capitalize
-                        }
-
-                        Text {
-                            text: "Matte Shell • " + Qt.formatTime(new Date(), "hh:mm")
-                            color: theme.secondary
-                            font.pixelSize: 13
-                        }
-                    }
-
-                    Item { Layout.fillWidth: true }
-
-                    Rectangle {
-                        Layout.preferredWidth: 40
-                        Layout.preferredHeight: 40
-                        radius: 8
-                        color: powerBtn.pressed ? theme.tile : "transparent"
-                        border.width: 1
-                        border.color: theme.border
-
-                        Behavior on color { ColorAnimation { duration: 150 } }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "󰐥"
-                            font.pixelSize: 18
-                            font.family: "Symbols Nerd Font"
-                            color: theme.urgent
-                        }
-
-                        TapHandler {
-                            id: powerBtn
-                            onTapped: powerMenu.isOpen = true
-                        }
-                    }
+                
+                globalState: root.globalState
+                theme: root.theme
+                notifManager: root.notifManager
+                
+                onRequestWifiMenu: toggleMenu("wifi")
+                onRequestBluetoothMenu: toggleMenu("bluetooth")
+                onRequestPowerMenu: root.globalState.powerMenuOpen = true
+            }
+            
+            // Separator (only visible when menu is open)
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: theme.border
+                visible: menuLoader.active
+                opacity: menuLoader.active ? 1 : 0
+                
+                Behavior on opacity { NumberAnimation { duration: 200 } }
+            }
+            
+            // Menu Loader (Wifi/BT)
+            Loader {
+                id: menuLoader
+                width: parent.width
+                active: false
+                visible: active
+                
+                // Animate height of the loader container? 
+                // Actually, controlBox height animates. This just needs to assert its height.
+                
+                sourceComponent: {
+                    if (root.currentMenu === "wifi") return wifiComp
+                    if (root.currentMenu === "bluetooth") return btComp
+                    return null
                 }
-
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 16
-
-                    Text {
-                        text: "Quick Settings"
-                        color: theme.text
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        opacity: 0.8
-                    }
-
-                    GridLayout {
-                        Layout.fillWidth: true
-                        columns: 2
-                        rowSpacing: 12
-                        columnSpacing: 12
-
-                        Item {
-                            Layout.fillWidth: true
-                            implicitHeight: theme.toggleHeight
-                            
-                            ToggleButton {
-                                id: wifiButton
-                                anchors.fill: parent
-                                label: "WiFi"
-                                sublabel: "Connected"
-                                icon: "󰖩"
-                                active: true
-                                showChevron: true
-                                theme: theme
-                            }
-                            
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    wifiModal.isOpen = !wifiModal.isOpen
-                                }
-                            }
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                            implicitHeight: theme.toggleHeight
-                            
-                            ToggleButton {
-                                anchors.fill: parent
-                                label: "Bluetooth"
-                                sublabel: "Off"
-                                icon: "󰂯"
-                                active: false
-                                showChevron: true
-                                theme: theme
-                            }
-                            
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: {
-                                    btModal.isOpen = !btModal.isOpen
-                                }
-                            }
-                        }
-
-                        ToggleButton {
-                            label: "Airplane Mode"
-                            sublabel: "Off"
-                            icon: "󰀝"
-                            active: false
-                            showChevron: false
-                            theme: theme
-                            Layout.fillWidth: true
-                        }
-
-                        ToggleButton {
-                            label: "Night Mode"
-                            sublabel: "Off"
-                            icon: "󰖔"
-                            active: false
-                            showChevron: false
-                            theme: theme
-                            Layout.fillWidth: true
-                        }
-
-                        // Bottom 2 buttons - slide down from under expand button when expanded
-                        ToggleButton {
-                            opacity: root.isExpanded ? 1 : 0
-                            Layout.preferredHeight: root.isExpanded ? implicitHeight : 0
-                            clip: true
-                            label: "Do Not Disturb"
-                            sublabel: "Off"
-                            icon: "󰂛"
-                            active: false
-                            showChevron: false
-                            theme: theme
-                            Layout.fillWidth: true
-
-                            Behavior on opacity {
-                                NumberAnimation {
-                                    duration: 300
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-
-                            Behavior on Layout.preferredHeight {
-                                NumberAnimation {
-                                    duration: 300
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-                        }
-
-                        ToggleButton {
-                            opacity: root.isExpanded ? 1 : 0
-                            Layout.preferredHeight: root.isExpanded ? implicitHeight : 0
-                            clip: true
-                            label: "Microphone"
-                            sublabel: "Active"
-                            icon: "󰍬"
-                            active: true
-                            showChevron: false
-                            theme: theme
-                            Layout.fillWidth: true
-
-                            Behavior on opacity {
-                                NumberAnimation {
-                                    duration: 300
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-
-                            Behavior on Layout.preferredHeight {
-                                NumberAnimation {
-                                    duration: 300
-                                    easing.type: Easing.OutCubic
-                                }
-                            }
-                        }
-                    }
-
-                    // Expand/Collapse button moved to under sliders
+                
+                onLoaded: {
+                    // Optional: fade in content
+                    item.opacity = 0
+                    fadeIn.start()
                 }
-
-                // Media controls - always visible
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 16
-
-                    Text {
-                        text: "Audio & Display"
-                        color: theme.text
-                        font.pixelSize: 14
-                        font.weight: Font.Medium
-                        opacity: 0.8
-                    }
-
-                    SliderControl {
-                        label: "Volume"
-                        icon: "󰕾"
-                        value: 0.65
-                        theme: theme
-                    }
-
-                    SliderControl {
-                        label: "Brightness"
-                        icon: "󰃠"
-                        value: 0.80
-                        theme: theme
-                    }
-
-                    // Expand/Collapse button - under sliders
-                    Rectangle {
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: 40
-                        color: expandBtn2.pressed ? theme.tile : "transparent"
-                        radius: 8
-
-                        Behavior on color { ColorAnimation { duration: 150 } }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: root.isExpanded ? "󰅃" : "󰅀"  // Up arrow when expanded, down arrow when collapsed
-                            font.pixelSize: 16
-                            font.family: "Symbols Nerd Font"
-                            color: theme.accent
-                        }
-
-                        MouseArea {
-                            id: expandBtn2
-                            anchors.fill: parent
-                            onClicked: root.isExpanded = !root.isExpanded
-                        }
-                    }
+                
+                NumberAnimation {
+                    id: fadeIn
+                    target: menuLoader.item
+                    property: "opacity"
+                    to: 1
+                    duration: 200
                 }
+            }
+        }
+        
+        // Interaction Handlers (Only internal hover)
+        HoverHandler { id: controlHandler }
 
-                // Separator - always visible since notifications are always visible
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.topMargin: theme.sectionSpacing
-                    Layout.preferredHeight: 1
-                    color: theme.border
-                }
-
-                // Notifications - shifts down with animation when expanded
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    spacing: 12
-                    Layout.topMargin: isExpanded ? 120 : 0
-
-                    Behavior on Layout.topMargin {
-                        NumberAnimation {
-                            duration: 300
-                            easing.type: Easing.OutCubic
-                        }
-                    }
-
-                    RowLayout {
-                        Layout.fillWidth: true
-
-                        Text {
-                            text: "Notifications"
-                            color: theme.text
-                            font.pixelSize: 16
-                            font.weight: Font.Medium
-                        }
-
-                        Item { Layout.fillWidth: true }
-
-                        Text {
-                            text: "Clear all"
-                            color: theme.accent
-                            font.pixelSize: 13
-                            font.weight: Font.Medium
-                        visible: root.notifManager.notifications.count > 0
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.notifManager.clearHistory()
-                            }
-                        }
-                    }
-
-                    ColumnLayout {
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        spacing: 12
-
-                        Repeater {
-                            model: root.notifManager.notifications
-
-                            NotificationItem {
-                                required property var model
-                                required property int index
-                                Layout.fillWidth: true
-                                notifId: model.id
-                                summary: model.summary || ""
-                                body: model.body || ""
-                                image: model.image || ""
-                                appIcon: model.appIcon || ""
-                                theme: theme
-
-                                onRemoveRequested: {
-                                    console.log("SidePanel received removeRequested for ID:", notifId)
-                                    root.notifManager.removeById(notifId)
-                                }
-
-                                Component.onCompleted: {
-                                    console.log("NotificationItem created via Repeater:", summary, "ID:", notifId)
-                                }
-                            }
-                        }
-
-                        // Empty state when no notifications
-                        Rectangle {
-                            visible: root.notifManager.notifications.count === 0
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-                            color: "transparent"
-
-                            ColumnLayout {
-                                anchors.centerIn: parent
-                                spacing: 8
-
-                                Text {
-                                    text: "󰂚"
-                                    font.pixelSize: 32
-                                    font.family: "Symbols Nerd Font"
-                                    color: theme.muted
-                                    Layout.alignment: Qt.AlignHCenter
-                                }
-
-                                Text {
-                                    text: "No notifications"
-                                    color: theme.muted
-                                    font.pixelSize: 14
-                                    Layout.alignment: Qt.AlignHCenter
-                                }
-                            }
-                        }
-                    }
-                }
+        // Animation
+        Behavior on x {
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: [0.38, 1.21, 0.22, 1, 1, 1]
+            }
+        }
+        
+        // Height Expansion Animation
+        Behavior on height {
+            NumberAnimation {
+                duration: 500
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: [0.38, 1.21, 0.22, 1, 1, 1]
             }
         }
     }
 
-    PowerMenu {
-        id: powerMenu
+    // Shared State for Menu
+    property string currentMenu: ""
+
+    function toggleMenu(menu) {
+        if (root.currentMenu === menu) {
+            // Close
+            menuLoader.active = false
+            root.currentMenu = ""
+        } else {
+            // Open
+            root.currentMenu = menu
+            menuLoader.active = true
+        }
     }
 
-    WifiModal {
-        id: wifiModal
-        anchors.fill: content
-        theme: theme
-        globalState: root.globalState
-        z: 100
-        onClose: wifiModal.isOpen = false
+    // Components for submenus
+    Component {
+        id: wifiComp
+        Views.WifiView {
+            theme: root.theme
+            globalState: root.globalState
+            onBackRequested: toggleMenu("") // Close
+        }
+    }
+    Component {
+        id: btComp
+        Views.BluetoothView {
+            theme: root.theme
+            globalState: root.globalState
+            onBackRequested: toggleMenu("") // Close
+        }
     }
 
-    BtModal {
-        id: btModal
-        anchors.fill: content
-        theme: theme
-        globalState: root.globalState
-        z: 100
-        onClose: btModal.isOpen = false
+    // --- Notification Box (Bottom) ---
+    Rectangle {
+        id: notifBox
+        width: root.boxWidth
+        
+        // Dynamic Y position: follows controlBox directly
+        property int baseY: controlBox.y + controlBox.height + 12
+        y: baseY
+        
+        // Height dynamics: Fill available space to bottom, minus margin
+        // If content is smaller, shrink to content.
+        property int maxAvailableHeight: root.height - baseY - 20 // 20px bottom margin
+        height: Math.min(Math.max(100, maxAvailableHeight), notifContent.implicitHeight + 32)
+        
+        x: root.getX(root.notifOpen || root.forcedOpen)
+        
+        radius: 16
+        color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.95)
+        border.width: 1
+        border.color: theme.border
+        
+        layer.enabled: true
+        layer.effect: DropShadow {
+            transparentBorder: true
+            radius: 16
+            samples: 17
+            color: "#40000000"
+        }
+        
+        Views.NotificationBoxContent {
+            id: notifContent
+            anchors.fill: parent
+            anchors.margins: 16
+            // We use anchors to fill allowing ListView to stretch
+            
+            theme: theme
+            notifManager: root.notifManager
+        }
+
+        HoverHandler { id: notifHandler }
+        
+        Behavior on x {
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: [0.38, 1.21, 0.22, 1, 1, 1]
+            }
+        }
     }
+    
+    // --- Edge Peek Handlers (Static) ---
+    // Make them cover the right edge of the *screen* (parent)
+    // and extend slightly inwards to catch the hover.
+    
+    // Control Peek
+    Rectangle {
+        color: "transparent"
+        x: parent.width - 20
+        y: controlBox.y
+        width: 20
+        height: controlBox.height
+        HoverHandler { id: controlPeekHandler }
+    }
+    
+    // Notif Peek
+    Rectangle {
+        color: "transparent"
+        x: parent.width - 20
+        y: notifBox.y
+        width: 20
+        height: notifBox.height
+        HoverHandler { 
+            // We can reuse notifHandler? No, separate logic.
+            // But we want it to trigger notifOpen.
+            // root.notifOpen is bound to notifHandler.hovered.
+            // We need to update that binding.
+            id: notifPeekHandler 
+        }
+    }
+    
+    // Update state trackers to include new static handlers
+    // property bool controlHovered: controlHandler.hovered || controlHeaderHandler.hovered || menuHandler.hovered
+    // property bool notifHovered: notifHandler.hovered || notifPeekHandler.hovered
 }

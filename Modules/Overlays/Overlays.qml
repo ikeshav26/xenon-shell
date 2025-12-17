@@ -69,7 +69,12 @@ Item {
     }
     IpcHandler {
         target: "sidePanel"
-        function toggle() { root.context.appState.toggleSidePanel(); }
+        function open() { sidePanel.show(); }
+        function close() { sidePanel.hide(); }
+        function toggle() { 
+            if (sidePanel.forcedOpen) sidePanel.hide();
+            else sidePanel.show();
+        }
     }
     IpcHandler {
         target: "wallpaperpanel"

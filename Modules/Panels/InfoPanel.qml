@@ -34,10 +34,10 @@ PanelWindow {
         opacity: globalState.infoPanelOpen ? 1 : 0
         
         Behavior on color {
-            ColorAnimation { duration: 350; easing.type: Easing.OutCubic }
+            ColorAnimation { duration: 120; easing.type: Easing.OutExpo }
         }
         Behavior on opacity {
-            NumberAnimation { duration: 350; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 120; easing.type: Easing.OutExpo }
         }
     }
     
@@ -76,14 +76,14 @@ PanelWindow {
         
         Behavior on opacity {
             NumberAnimation {
-                duration: 350
-                easing.type: Easing.OutCubic
+                duration: 120
+                easing.type: Easing.OutExpo
             }
         }
         
         Behavior on scale {
             NumberAnimation {
-                duration: 400
+                duration: 180
                 easing.type: Easing.OutBack
                 easing.overshoot: 1.15
             }

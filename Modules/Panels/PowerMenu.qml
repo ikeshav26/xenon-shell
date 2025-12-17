@@ -28,7 +28,7 @@ PanelWindow {
         color: "#000000"
         opacity: isOpen ? 0.9 : 0
         
-        Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutQuad } }
+        Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutExpo } }
         
         MouseArea {
             anchors.fill: parent
@@ -49,8 +49,8 @@ PanelWindow {
         opacity: isOpen ? 1 : 0
         scale: isOpen ? 1 : 0.95
         
-        Behavior on opacity { NumberAnimation { duration: 300; easing.type: Easing.OutQuad } }
-        Behavior on scale { NumberAnimation { duration: 300; easing.type: Easing.OutBack } }
+        Behavior on opacity { NumberAnimation { duration: 120; easing.type: Easing.OutExpo } }
+        Behavior on scale { NumberAnimation { duration: 180; easing.type: Easing.OutBack } }
         
         ColumnLayout {
             id: contentLayout
