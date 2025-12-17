@@ -1,199 +1,264 @@
 import QtQuick
 import QtQuick.Layouts
-import Qt5Compat.GraphicalEffects // Required for DropShadow
+import QtQuick.Controls
+import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
 import qs.Core
 
 PanelWindow {
-    id: toast
-    
+    id: root
+
     required property var manager
-
-    // --- NEW COLOR PALETTE ---
-    QtObject {
-        id: theme
-        readonly property color bg: "#1a1b26"
-        readonly property color fg: "#a9b1d6"
-        readonly property color muted: "#444b6a"
-        readonly property color cyan: "#0db9d7"
-        readonly property color purple: "#ad8ee6"
-        readonly property color red: "#f7768e"
-        readonly property color yellow: "#e0af68"
-        readonly property color blue: "#7aa2f7"
-    }
-
-    // --- WINDOW SETUP ---
-    visible: manager.popupVisible || content.opacity > 0
     
-    implicitWidth: 380
-    implicitHeight: content.implicitHeight
-    color: "transparent"
-
+    // --- Data Latching ---
+    // We capture the notification data locally so it persists even if the manager clears it.
+    property string notifTitle: ""
+    property string notifBody: ""
+    property string notifIcon: ""
+    property string notifImage: ""
+    property int notifUrgency: 1
+    
+    // State
+    property bool showing: false
+    
+    // Configuration
+    property int displayTime: 6000
+    
+    // Positioning
     anchors {
         top: true
         right: true
     }
-
+    
+    // Margins to avoid top bar
+    WlrLayershell.margins.top: 60
+    WlrLayershell.margins.right: 20
+    
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "notifications-toast"
-    WlrLayershell.exclusiveZone: -1 // Floats freely without reserving space
+    WlrLayershell.exclusiveZone: -1
     
-    // FIX: "Don't hide my bar"
-    // We add enough top margin to clear the top bar (Assuming bar is ~50px)
-    WlrLayershell.margins.top: 60   
-    WlrLayershell.margins.right: 20
-
-    // --- CONTENT ---
-    Rectangle {
+    implicitWidth: 380
+    implicitHeight: content.implicitHeight + 20 // Padding for shadow
+    
+    color: "transparent"
+    
+    // --- Logic ---
+    
+    Connections {
+        target: manager
+        function onPopupVisibleChanged() {
+            if (manager.popupVisible && manager.currentPopup) {
+                // Capture data
+                root.notifTitle = manager.currentPopup.summary || "Notification"
+                root.notifBody = manager.currentPopup.body || ""
+                root.notifIcon = manager.currentPopup.appIcon || ""
+                root.notifImage = manager.currentPopup.image || ""
+                root.notifUrgency = manager.currentPopup.urgency
+                
+                // Show and restart timer
+                root.showing = true
+                dismissTimer.restart()
+                
+                console.log("[Toast] New notification captured: " + root.notifTitle)
+            }
+        }
+    }
+    
+    Timer {
+        id: dismissTimer
+        interval: root.displayTime
+        onTriggered: root.showing = false
+    }
+    
+    QtObject {
+        id: theme
+        property color bg: "#1e1e2e" // Base
+        property color surface: "#313244" // Surface0
+        property color text: "#cdd6f4" // Text
+        property color subtext: "#a6adc8" // Subtext0
+        property color border: "#45475a" // Surface1
+        property color accent: "#89b4fa" // Blue
+        property color urgent: "#f38ba8" // Red
+    }
+    
+    // --- Visuals ---
+    
+    Item {
         id: content
-        implicitWidth: parent.implicitWidth
-        implicitHeight: layout.implicitHeight + 32 
+        width: 360
+        implicitHeight: mainLayout.implicitHeight + 32
+        x: root.showing ? 0 : 400 // Slide out to right
+        opacity: root.showing ? 1 : 0
         
-        radius: 12
-        color: theme.bg // Main background
+        Behavior on x { NumberAnimation { duration: 400; easing.type: Easing.OutBack } }
+        Behavior on opacity { NumberAnimation { duration: 300 } }
         
-        // Border: Red if urgent, Muted (Grey/Blue) otherwise
-        border.width: 1
-        border.color: (manager.currentPopup?.urgency === 2) ? theme.red : theme.muted
-
-        // Animation
-        opacity: manager.popupVisible ? 1 : 0
-        Behavior on opacity { NumberAnimation { duration: 250; easing.type: Easing.OutCubic } }
-
-        // Shadow
+        // Shadow/Glow
         layer.enabled: true
         layer.effect: DropShadow {
             transparentBorder: true
-            color: "#80000000" // 50% opacity black
-            radius: 10
-            samples: 16
+            radius: 16
+            samples: 17
+            color: "#60000000"
             verticalOffset: 4
         }
-
-        RowLayout {
-            id: layout
-            anchors.top: parent.top
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.margins: 16
-            spacing: 16
-
-            // --- ICON ---
+        
+        Rectangle {
+            anchors.fill: parent
+            radius: 16
+            color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.95)
+            
+            border.width: 1
+            border.color: root.notifUrgency === 2 ? theme.urgent : theme.border
+            
+            // Progress Bar (Time remaining)
             Rectangle {
-                Layout.preferredWidth: 48
-                Layout.preferredHeight: 48
-                radius: 8
-                // Using 'muted' for the icon box to make it distinct but subtle
-                color: theme.muted
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.leftMargin: 16
+                anchors.rightMargin: 16
+                height: 2
+                radius: 1
+                color: root.notifUrgency === 2 ? theme.urgent : theme.accent
                 
-                Image {
-                    id: iconImage
+                width: parent.width - 32
+                // Animate width from full to 0 over displayTime
+                // We use a separate rect for animation to avoid complex bindings on 'width'
+                Rectangle {
                     anchors.fill: parent
-                    anchors.margins: 4
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                    source: {
-                        if (!manager.currentPopup) return ""
-                        
-                        var img = manager.currentPopup.image || ""
-                        var icon = manager.currentPopup.appIcon || ""
-                        
-                        // Prioritize image over icon
-                        if (img !== "") {
-                            if (img.startsWith("/") || img.startsWith("file://")) {
-                                return img.startsWith("file://") ? img : "file://" + img
-                            }
-                        }
-                        
-                        // Use appIcon if no image
-                        if (icon !== "") {
-                            if (icon.startsWith("/") || icon.startsWith("file://")) {
-                                return icon.startsWith("file://") ? icon : "file://" + icon
-                            }
-                            // It's an icon name, use icon provider
-                            return "image://icon/" + icon
-                        }
-                        
-                        return ""
-                    }
-                    visible: status === Image.Ready
-                    cache: false
-                    
-                    onStatusChanged: {
-                        if (status == Image.Error) {
-                            console.log("Toast icon failed to load:", source)
-                        }
-                    }
+                    color: root.notifUrgency === 2 ? theme.urgent : theme.accent
+                    visible: false // Just use parent for now or implement animation
                 }
                 
-                // Fallback icon when no image available
-                Text {
-                    anchors.centerIn: parent
-                    text: "󰂚"
-                    font.pixelSize: 32
-                    font.family: "Symbols Nerd Font"
-                    color: theme.fg
-                    visible: !iconImage.visible
+                // Simple animation:
+                Behavior on width { enabled: false } // Disable default behavior
+                NumberAnimation on width {
+                    id: progressAnim
+                    from: 328 // (360 - 32)
+                    to: 0
+                    duration: root.displayTime
+                    running: root.showing
+                }
+                
+                // Reset width when showing
+                onVisibleChanged: {
+                    if (visible) {
+                        width = 328
+                        progressAnim.restart()
+                    }
                 }
             }
 
-            // --- TEXT ---
-            ColumnLayout {
-                Layout.fillWidth: true
-                Layout.alignment: Qt.AlignVCenter
-                spacing: 4
-                
-                Text {
-                    text: manager.currentPopup ? manager.currentPopup.summary : "Notification"
-                    font.bold: true
-                    font.pixelSize: 14
-                    color: theme.fg // Main Text
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.LeftButton | Qt.RightButton
+                onClicked: (mouse) => {
+                    if (mouse.button === Qt.RightButton) {
+                        root.showing = false // Dismiss locally
+                        manager.closePopup() // Tell server we're done
+                    } else {
+                        // Left click: Just dismiss or maybe invoke action?
+                        // For now, just dismiss.
+                         root.showing = false
+                         manager.closePopup()
+                    }
                 }
-                Text {
-                    text: manager.currentPopup ? manager.currentPopup.body : ""
-                    font.pixelSize: 13
-                    // Using 'muted' text would be too dark, so we use 'fg' with opacity or find a middle ground.
-                    // Since we don't have a 'secondary' color in the new palette, we use 'fg' with transparency or 'purple'/'blue' for style.
-                    // Let's stick to 'fg' but make it slightly smaller/regular weight (above). 
-                    // Or we can use the 'muted' color if it's readable enough (check contrast). 
-                    // #444b6a on #1a1b26 is low contrast. Let's use fg with opacity:
-                    color: Qt.alpha(theme.fg, 0.7)
-                    
-                    wrapMode: Text.Wrap
-                    maximumLineCount: 3
-                    elide: Text.ElideRight
-                    Layout.fillWidth: true
-                }
+                HoverHandler { cursorShape: Qt.PointingHandCursor }
             }
             
-            // --- CLOSE BUTTON ---
-            Rectangle {
-                Layout.preferredWidth: 24
-                Layout.preferredHeight: 24
-                Layout.alignment: Qt.AlignTop
-                color: closeMa.pressed ? theme.muted : "transparent"
-                radius: 12
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "✕"
-                    // Red on hover/press, muted otherwise
-                    color: closeMa.pressed ? theme.red : theme.fg
-                    opacity: closeMa.pressed ? 1 : 0.5
-                    font.pixelSize: 12
+            RowLayout {
+                id: mainLayout
+                anchors.fill: parent
+                anchors.margins: 16
+                spacing: 16
+                
+                // Icon / Image
+                Rectangle {
+                    Layout.preferredWidth: 48
+                    Layout.preferredHeight: 48
+                    Layout.alignment: Qt.AlignTop
+                    radius: 12
+                    color: theme.surface
+                    
+                    Image {
+                        id: imgDisplay
+                        anchors.fill: parent
+                        anchors.margins: 0
+                        fillMode: Image.PreserveAspectCrop
+                        layer.enabled: true
+                        layer.effect: OpacityMask {
+                            maskSource: Rectangle { width: 48; height: 48; radius: 12 }
+                        }
+                        
+                        source: {
+                            if (root.notifImage.startsWith("/")) return "file://" + root.notifImage
+                            if (root.notifImage.indexOf("://") !== -1) return root.notifImage
+                            
+                            // If no image, try icon
+                            if (root.notifIcon.indexOf("/") !== -1) return "file://" + root.notifIcon
+                            if (root.notifIcon !== "") return "image://icon/" + root.notifIcon
+                            
+                            return ""
+                        }
+                        
+                        visible: status === Image.Ready
+                    }
+                    
+                    // Fallback Icon
+                    Text {
+                        anchors.centerIn: parent
+                        text: "󰂚"
+                        font.family: "Symbols Nerd Font"
+                        font.pixelSize: 24
+                        color: theme.subtext
+                        visible: !imgDisplay.visible
+                    }
                 }
-
-                MouseArea {
-                    id: closeMa
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: manager.closePopup()
+                
+                // Content
+                ColumnLayout {
+                    Layout.fillWidth: true
+                    spacing: 4
+                    
+                    Text {
+                        text: root.notifTitle
+                        Layout.fillWidth: true
+                        font.bold: true
+                        font.pixelSize: 14
+                        color: theme.text
+                        elide: Text.ElideRight
+                    }
+                    
+                    Text {
+                        text: root.notifBody
+                        Layout.fillWidth: true
+                        Layout.maximumHeight: 60 // Limit height
+                        font.pixelSize: 13
+                        color: theme.subtext
+                        wrapMode: Text.Wrap
+                        elide: Text.ElideRight
+                        maximumLineCount: 3
+                    }
+                }
+                
+                // Close Button (Small X)
+                Rectangle {
+                     Layout.alignment: Qt.AlignTop | Qt.AlignRight
+                     width: 16
+                     height: 16
+                     color: "transparent"
+                     Text {
+                         anchors.centerIn: parent
+                         text: "✕"
+                         color: theme.subtext
+                         font.pixelSize: 10
+                         opacity: 0.7
+                     }
                 }
             }
         }
     }
 }
+
