@@ -139,43 +139,83 @@ WlSessionLockSurface {
                     Layout.fillHeight: true
                     spacing: 12
 
-                    // Clock Card
+                    // Clock Card (Binary Clock - BCD Format)
                     BentoCard {
+                        id: clockCard
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         cardColor: root.colors.surface
                         borderColor: root.colors.border
 
+                        property int hours: new Date().getHours()
+                        property int minutes: new Date().getMinutes()
+                        property int seconds: new Date().getSeconds()
+
+                        Timer {
+                            interval: 1000
+                            running: true
+                            repeat: true
+                            onTriggered: {
+                                var now = new Date()
+                                clockCard.hours = now.getHours()
+                                clockCard.minutes = now.getMinutes()
+                                clockCard.seconds = now.getSeconds()
+                            }
+                        }
+
                         ColumnLayout {
                             anchors.centerIn: parent
-                            spacing: 0
+                            spacing: 16
 
-                            Text {
-                                text: Qt.formatTime(new Date(), "hh")
-                                font.pixelSize: 64
-                                font.weight: Font.Black
-                                color: root.colors.accent
+                            // BCD Binary display (6 columns)
+                            RowLayout {
                                 Layout.alignment: Qt.AlignHCenter
-                                lineHeight: 0.85
-                                Timer { interval: 1000; running: true; repeat: true; onTriggered: parent.text = Qt.formatTime(new Date(), "hh") }
+                                spacing: 6
+
+                                // Hours (H1: 2 bits, H2: 4 bits)
+                                RowLayout {
+                                    spacing: 4
+                                    BinaryColumn { value: Math.floor(clockCard.hours / 10); bits: 2; dotSize: 10; activeColor: root.colors.accent }
+                                    BinaryColumn { value: clockCard.hours % 10; bits: 4; dotSize: 10; activeColor: root.colors.accent }
+                                }
+
+                                // Separator
+                                Rectangle { width: 2; height: 60; radius: 1; color: root.colors.border; opacity: 0.4 }
+
+                                // Minutes (M1: 3 bits, M2: 4 bits)
+                                RowLayout {
+                                    spacing: 4
+                                    BinaryColumn { value: Math.floor(clockCard.minutes / 10); bits: 3; dotSize: 10; activeColor: root.colors.secondary }
+                                    BinaryColumn { value: clockCard.minutes % 10; bits: 4; dotSize: 10; activeColor: root.colors.secondary }
+                                }
+
+                                // Separator
+                                Rectangle { width: 2; height: 60; radius: 1; color: root.colors.border; opacity: 0.4 }
+
+                                // Seconds (S1: 3 bits, S2: 4 bits)
+                                RowLayout {
+                                    spacing: 4
+                                    BinaryColumn { value: Math.floor(clockCard.seconds / 10); bits: 3; dotSize: 10; activeColor: root.colors.tertiary }
+                                    BinaryColumn { value: clockCard.seconds % 10; bits: 4; dotSize: 10; activeColor: root.colors.tertiary }
+                                }
                             }
 
+                            // Digital time below
                             Text {
-                                text: Qt.formatTime(new Date(), "mm")
-                                font.pixelSize: 64
-                                font.weight: Font.Black
+                                text: clockCard.hours.toString().padStart(2, '0') + ":" + clockCard.minutes.toString().padStart(2, '0') + ":" + clockCard.seconds.toString().padStart(2, '0')
+                                font.pixelSize: 16
+                                font.weight: Font.Bold
+                                font.family: "JetBrainsMono Nerd Font"
                                 color: root.colors.fg
                                 Layout.alignment: Qt.AlignHCenter
-                                lineHeight: 0.85
-                                Timer { interval: 1000; running: true; repeat: true; onTriggered: parent.text = Qt.formatTime(new Date(), "mm") }
                             }
 
+                            // Date
                             Text {
                                 text: Qt.formatDate(new Date(), "ddd, MMM d")
-                                font.pixelSize: 12
+                                font.pixelSize: 11
                                 color: root.colors.muted
                                 Layout.alignment: Qt.AlignHCenter
-                                Layout.topMargin: 10
                             }
                         }
                     }
@@ -627,19 +667,24 @@ WlSessionLockSurface {
                                     clip: true
 
                                     delegate: Rectangle {
-                                        width: ListView.view.width
-                                        height: 48
+                                        required property int index
+                                        required property string summary
+                                        required property string body
+                                        required property string appName
+                                        required property string time
+                                        width: ListView.view ? ListView.view.width : 100
+                                        height: 44
                                         radius: 8
                                         color: Qt.rgba(root.colors.tileActive.r, root.colors.tileActive.g, root.colors.tileActive.b, 0.4)
 
                                         RowLayout {
                                             anchors.fill: parent
                                             anchors.margins: 6
-                                            spacing: 8
+                                            spacing: 6
 
                                             Rectangle {
-                                                Layout.preferredWidth: 28
-                                                Layout.preferredHeight: 28
+                                                Layout.preferredWidth: 26
+                                                Layout.preferredHeight: 26
                                                 radius: 6
                                                 color: root.colors.surface
 
@@ -647,37 +692,40 @@ WlSessionLockSurface {
                                                     anchors.centerIn: parent
                                                     text: "󰍡"
                                                     font.family: "Symbols Nerd Font"
-                                                    font.pixelSize: 14
+                                                    font.pixelSize: 12
                                                     color: root.colors.accent
                                                 }
                                             }
 
                                             ColumnLayout {
                                                 Layout.fillWidth: true
-                                                spacing: 0
+                                                spacing: 1
 
                                                 Text {
-                                                    text: model.summary
+                                                    text: summary
                                                     color: root.colors.fg
-                                                    font.pixelSize: 10
+                                                    font.pixelSize: 9
                                                     font.bold: true
                                                     Layout.fillWidth: true
                                                     elide: Text.ElideRight
+                                                    maximumLineCount: 1
                                                 }
 
                                                 Text {
-                                                    text: model.body || model.appName
+                                                    text: body || appName
                                                     color: root.colors.muted
-                                                    font.pixelSize: 9
+                                                    font.pixelSize: 8
                                                     Layout.fillWidth: true
                                                     elide: Text.ElideRight
+                                                    maximumLineCount: 1
                                                 }
                                             }
 
                                             Text {
-                                                text: model.time
+                                                text: time
                                                 color: root.colors.muted
-                                                font.pixelSize: 8
+                                                font.pixelSize: 7
+                                                Layout.alignment: Qt.AlignTop
                                             }
                                         }
                                     }
@@ -747,6 +795,36 @@ WlSessionLockSurface {
             anchors.centerIn: parent; spacing: 0
             Text { text: Math.round(progress * 100) + "%"; color: textColor; font.pixelSize: 9; font.bold: true; Layout.alignment: Qt.AlignHCenter }
             Text { text: label; color: mutedColor; font.pixelSize: 7; Layout.alignment: Qt.AlignHCenter }
+        }
+    }
+
+    // Binary column for BCD clock
+    component BinaryColumn: Column {
+        property int value: 0
+        property int bits: 4
+        property real dotSize: 10
+        property color activeColor: "white"
+
+        spacing: dotSize * 0.4
+        Layout.alignment: Qt.AlignBottom
+
+        Repeater {
+            model: bits
+
+            Rectangle {
+                required property int index
+                property int bitIndex: (bits - 1) - index
+                property bool isActive: (value >> bitIndex) & 1
+
+                width: dotSize
+                height: dotSize
+                radius: dotSize / 2
+                color: isActive ? activeColor : Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.2)
+
+                Behavior on color {
+                    ColorAnimation { duration: 200 }
+                }
+            }
         }
     }
 }
