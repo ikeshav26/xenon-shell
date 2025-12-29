@@ -157,6 +157,23 @@ PanelWindow {
         property int spacing: 12
     }
 
+    Connections {
+        target: globalState
+        function onRequestSidePanelMenu(menu) {
+            if (root.currentMenu === menu && root.controlOpen) {
+                // If the same menu is requested and panel is open, close it (toggle behavior)
+                toggleMenu(menu); // This will close the menu
+                root.controlOpen = false;
+            } else {
+                // Otherwise open/switch to it
+                if (root.currentMenu !== menu) {
+                    toggleMenu(menu);
+                }
+                root.controlOpen = true;
+            }
+        }
+    }
+
     MouseArea {
         anchors.fill: parent
         z: -100

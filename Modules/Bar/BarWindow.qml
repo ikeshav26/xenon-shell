@@ -45,6 +45,7 @@ Variants {
             time: root.context.time.currentTime
             volumeService: root.context.volume
             networkService: root.context.network
+            globalState: root.context.appState
         }
 
     }

@@ -25,6 +25,7 @@ Rectangle {
     property bool floating: true
     property var volumeService
     property var networkService
+    property var globalState
 
     anchors.fill: parent
     color: colors.bg
@@ -411,7 +412,7 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 cursorShape: Qt.PointingHandCursor
-                onClicked: networkService.toggleWifi()
+                onClicked: globalState.requestSidePanelMenu("wifi")
             }
         }
 
