@@ -20,6 +20,20 @@ ColumnLayout {
         color: colors.fg
     }
 
+    ToggleButton {
+        Layout.fillWidth: true
+        label: "Lock Screen Blur"
+        sublabel: "Enable blur effect on lock screen"
+        icon: ">"
+        active: !Config.disableLockBlur
+        theme: colors
+        onActiveChanged: {
+            if (active !== !Config.disableLockBlur) {
+                Config.disableLockBlur = !active
+            }
+        }
+    }
+
     // Font Family Input
     Rectangle {
         Layout.fillWidth: true

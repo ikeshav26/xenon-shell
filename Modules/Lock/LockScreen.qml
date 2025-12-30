@@ -52,7 +52,7 @@ WlSessionLockSurface {
         anchors.fill: parent
         captureSource: root.screen
         opacity: 0
-        layer.enabled: visible && opacity > 0
+        layer.enabled: visible && opacity > 0 && !Config.disableLockBlur
 
         layer.effect: FastBlur {
             radius: 48

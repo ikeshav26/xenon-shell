@@ -15,6 +15,7 @@ Singleton {
     property bool floatingBar: false
     property var colors: null
     property var openRgbDevices: [0]
+    property bool disableLockBlur: false
     property bool debug: false
 
     onDebugChanged: {
@@ -35,6 +36,7 @@ Singleton {
         configAdapter.floatingBar = root.floatingBar;
         configAdapter.colors = root.colors;
         configAdapter.openRgbDevices = root.openRgbDevices;
+        configAdapter.disableLockBlur = root.disableLockBlur;
         configAdapter.debug = root.debug;
 
         configFile.writeAdapter();
@@ -54,6 +56,7 @@ Singleton {
     onFloatingBarChanged: if (!_loading) saveTimer.restart()
     onColorsChanged: if (!_loading) saveTimer.restart()
     onOpenRgbDevicesChanged: if (!_loading) saveTimer.restart()
+    onDisableLockBlurChanged: if (!_loading) saveTimer.restart()
 
     FileView {
         id: configFile
@@ -76,6 +79,7 @@ Singleton {
             property bool floatingBar
             property var colors
             property var openRgbDevices
+            property bool disableLockBlur
             property bool debug
         }
 
@@ -88,6 +92,7 @@ Singleton {
                 if (configAdapter.disableHover !== undefined) root.disableHover = configAdapter.disableHover;
                 if (configAdapter.floatingBar !== undefined) root.floatingBar = configAdapter.floatingBar;
                 if (configAdapter.colors) root.colors = configAdapter.colors;
+                if (configAdapter.disableLockBlur !== undefined) root.disableLockBlur = configAdapter.disableLockBlur;
                 if (configAdapter.debug !== undefined) root.debug = configAdapter.debug;
 
                 if (configAdapter.openRgbDevices !== undefined) {
