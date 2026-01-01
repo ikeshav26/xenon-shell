@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
+import Quickshell.Services.UPower
 import qs.Core
 import qs.Services
 
@@ -22,9 +23,18 @@ Rectangle {
     required property string currentLayout
     required property string time
     property bool floating: true
+    
+    // Services
     property var volumeService
     property var networkService
     property var globalState
+    
+    // Battery via UPower
+    property var battery: UPower.displayDevice
+    property real batteryPercent: battery && battery.percentage !== undefined ? battery.percentage * 100 : 0
+    property bool batteryCharging: battery && battery.state === UPowerDeviceState.Charging
+    property bool batteryFull: battery && battery.state === UPowerDeviceState.FullyCharged
+    property bool batteryReady: battery && battery.ready && battery.percentage !== undefined
 
     anchors.fill: parent
     color: colors.bg
@@ -62,13 +72,11 @@ Rectangle {
                 fillMode: Image.PreserveAspectFit
                 opacity: 0.9
             }
-
         }
 
-        VerticalDivider {
-        }
+        VerticalDivider { }
 
-        // 3. Workspace Switcher
+        // 2. Workspace Switcher
         Rectangle {
             id: wsContainer
 
@@ -126,16 +134,13 @@ Rectangle {
                                 easing.type: Easing.OutBack
                                 easing.overshoot: 1.2
                             }
-
                         }
 
                         Behavior on color {
                             ColorAnimation {
                                 duration: 200
                             }
-
                         }
-
                     }
 
                     MouseArea {
@@ -144,17 +149,13 @@ Rectangle {
                         onClicked: Hyprland.dispatch("workspace " + parent.wsIndex)
                         cursorShape: Qt.PointingHandCursor
                     }
-
                 }
-
             }
-
         }
 
-        VerticalDivider {
-        }
+        VerticalDivider { }
 
-        // Keyboard Layout
+        // 3. Keyboard Layout
         Text {
             text: currentLayout
             color: colors.fg
@@ -164,18 +165,15 @@ Rectangle {
             opacity: 0.7
         }
 
-        VerticalDivider {
-        }
+        VerticalDivider { }
 
-        // 4. Enhanced Media Pill (Prev | Play/Pause | Next | Title)
+        // 4. Enhanced Media Pill
         Rectangle {
             id: mediaPill
 
             Layout.preferredHeight: 26
-            // Dynamically size based on content, but cap at 300px
             Layout.preferredWidth: Math.min(mediaRow.implicitWidth + 24, 300)
             radius: height / 2
-            // Chip Style background
             color: Qt.rgba(colors.accent.r, colors.accent.g, colors.accent.b, 0.15)
             border.color: Qt.rgba(colors.accent.r, colors.accent.g, colors.accent.b, 0.5)
             border.width: 1
@@ -187,7 +185,6 @@ Rectangle {
                 spacing: 6
                 width: parent.width - 12
 
-                // --- Previous Button ---
                 Text {
                     text: "󰒮" // Nerd Font Previous
                     font.family: "Symbols Nerd Font"
@@ -198,23 +195,14 @@ Rectangle {
 
                     MouseArea {
                         id: prevMouse
-
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
                         onClicked: MprisService.previous()
                     }
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-
-                    }
-
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
-                // --- Play/Pause Button (Circular) ---
                 Rectangle {
                     Layout.preferredWidth: 20
                     Layout.preferredHeight: 20
@@ -232,23 +220,14 @@ Rectangle {
 
                     MouseArea {
                         id: playMouse
-
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
                         onClicked: MprisService.playPause()
                     }
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-
-                    }
-
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
-                // --- Next Button ---
                 Text {
                     text: "󰒭" // Nerd Font Next
                     font.family: "Symbols Nerd Font"
@@ -258,23 +237,14 @@ Rectangle {
 
                     MouseArea {
                         id: nextMouse
-
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         hoverEnabled: true
                         onClicked: MprisService.next()
                     }
-
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 150
-                        }
-
-                    }
-
+                    Behavior on color { ColorAnimation { duration: 150 } }
                 }
 
-                // --- Media Title ---
                 Text {
                     text: MprisService.title !== "" ? MprisService.title : "No Media"
                     font.family: fontFamily
@@ -286,31 +256,22 @@ Rectangle {
                     elide: Text.ElideRight
                     Layout.leftMargin: 4
 
-                    // Clicking title also toggles play/pause for convenience
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: MprisService.playPause()
                     }
-
                 }
-
             }
 
             Behavior on Layout.preferredWidth {
-                NumberAnimation {
-                    duration: 200
-                }
-
+                NumberAnimation { duration: 200 }
             }
-
         }
 
-        Item {
-            Layout.fillWidth: true
-        }
+        Item { Layout.fillWidth: true }
 
-        // Active Window Title
+        // 5. Active Window Title
         InfoPill {
             visible: activeWindow !== ""
             Layout.maximumWidth: 400
@@ -326,14 +287,11 @@ Rectangle {
                 elide: Text.ElideMiddle
                 Layout.maximumWidth: 360
             }
-
         }
 
-        Item {
-            Layout.fillWidth: true
-        }
+        Item { Layout.fillWidth: true }
 
-        // System Stats
+        // 6. System Stats
         InfoPill {
             RowLayout {
                 spacing: 6
@@ -348,19 +306,15 @@ Rectangle {
 
                 Text {
                     id: tCpu
-
                     text: cpuUsage + "%"
                     color: colors.fg
                     font.pixelSize: fontSize - 1
                     font.family: fontFamily
                     Layout.alignment: Qt.AlignBaseline
                 }
-
             }
 
-            VerticalDivider {
-                Layout.preferredHeight: 10
-            }
+            VerticalDivider { Layout.preferredHeight: 10 }
 
             RowLayout {
                 spacing: 6
@@ -375,19 +329,16 @@ Rectangle {
 
                 Text {
                     id: tRam
-
                     text: memUsage + "%"
                     color: colors.fg
                     font.pixelSize: fontSize - 1
                     font.family: fontFamily
                     Layout.alignment: Qt.AlignBaseline
                 }
-
             }
-
         }
 
-        // Network
+        // 7. Network
         InfoPill {
             visible: networkService
 
@@ -404,7 +355,6 @@ Rectangle {
 
                 Text {
                     id: tNet
-
                     text: networkService.wifiEnabled ? (networkService.active ? networkService.active.ssid : "Disconnected") : "Off"
                     color: colors.fg
                     font.pixelSize: fontSize - 1
@@ -414,7 +364,6 @@ Rectangle {
                     elide: Text.ElideRight
                     Layout.alignment: Qt.AlignBaseline
                 }
-
             }
 
             TapHandler {
@@ -424,10 +373,9 @@ Rectangle {
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
             }
-
         }
 
-        // Volume
+        // 8. Volume
         InfoPill {
             RowLayout {
                 spacing: 6
@@ -438,17 +386,11 @@ Rectangle {
                     font.family: "Symbols Nerd Font"
                     font.pixelSize: fontSize + 2
                     Layout.alignment: Qt.AlignBaseline
-
-                    // Prevent animation on char change
-                    Behavior on text {
-                        enabled: false
-                    }
-
+                    Behavior on text { enabled: false }
                 }
 
                 Text {
                     id: tVol
-
                     text: (volumeService && volumeService.muted) ? "MUT" : (volumeLevel + "%")
                     color: (volumeService && volumeService.muted) ? colors.red : colors.fg
                     font.pixelSize: fontSize - 1
@@ -456,37 +398,67 @@ Rectangle {
                     font.bold: true
                     Layout.alignment: Qt.AlignBaseline
                 }
-
             }
 
             TapHandler {
                 onTapped: {
-                    if (volumeService)
-                        volumeService.toggleMute();
-
+                    if (volumeService) volumeService.toggleMute();
                 }
             }
 
             HoverHandler {
                 cursorShape: Qt.PointingHandCursor
             }
-            // WheelHandler is separate
 
             WheelHandler {
                 onWheel: (wheel) => {
-                    if (!volumeService)
-                        return ;
+                    if (!volumeService) return;
+                    if (wheel.angleDelta.y > 0) volumeService.increaseVolume();
+                    else volumeService.decreaseVolume();
+                }
+            }
+        }
 
-                    if (wheel.angleDelta.y > 0)
-                        volumeService.increaseVolume();
-                    else
-                        volumeService.decreaseVolume();
+        // 9. Battery
+        InfoPill {
+            visible: batteryReady
+
+            RowLayout {
+                spacing: 6
+
+                Text {
+                    text: BatteryService.getIcon(batteryPercent, batteryCharging, batteryReady)
+                    color: BatteryService.getStateColor(batteryPercent, batteryCharging, batteryFull)
+                    font.family: "Symbols Nerd Font"
+                    font.pixelSize: fontSize + 2
+                    Layout.alignment: Qt.AlignBaseline
+                }
+
+                Text {
+                    text: Math.round(batteryPercent) + "%"
+                    color: colors.fg
+                    font.pixelSize: fontSize - 1
+                    font.family: fontFamily
+                    font.bold: true
+                    Layout.alignment: Qt.AlignBaseline
                 }
             }
 
+            TapHandler {
+                onTapped: {
+                    console.log("Battery: " + Math.round(batteryPercent) + "% - " + 
+                               (batteryCharging ? "Charging" : batteryFull ? "Full" : "Discharging"))
+                    if (battery.timeToEmpty > 0) {
+                        console.log("Time to empty: " + BatteryService.formatTime(battery.timeToEmpty))
+                    }
+                    if (battery.timeToFull > 0) {
+                        console.log("Time to full: " + BatteryService.formatTime(battery.timeToFull))
+                    }
+                }
+            }
         }
 
-        // Clock
+        // 10. Clock
         Rectangle {
             Layout.preferredHeight: 26
             Layout.preferredWidth: clockText.implicitWidth + 24
@@ -495,7 +467,6 @@ Rectangle {
 
             Text {
                 id: clockText
-
                 anchors.centerIn: parent
                 text: time
                 color: colors.bg
@@ -508,12 +479,11 @@ Rectangle {
                 anchors.fill: parent
                 onClicked: globalState.toggleSettings()
                 cursorShape: Qt.PointingHandCursor
-                hoverEnabled: true // For HoverHandler behavior if needed, or just rely on MouseArea
+                hoverEnabled: true
             }
-
         }
 
-        // Power Menu
+        // 11. Power Menu
         Rectangle {
             Layout.preferredHeight: 26
             Layout.preferredWidth: 26
@@ -532,7 +502,6 @@ Rectangle {
 
             Process {
                 id: powerMenuIpcProcess
-
                 command: ["quickshell", "ipc", "-c", "mannu", "call", "powermenu", "toggle"]
             }
 
@@ -544,12 +513,11 @@ Rectangle {
                 onExited: parent.color = "transparent"
                 onClicked: powerMenuIpcProcess.running = true
             }
-
         }
-
     }
 
-    // Custom Components
+    // --- Components ---
+
     component VerticalDivider: Rectangle {
         Layout.preferredWidth: 1
         Layout.preferredHeight: 14
@@ -571,11 +539,8 @@ Rectangle {
 
         RowLayout {
             id: innerLayout
-
             anchors.centerIn: parent
             spacing: 8
         }
-
     }
-
 }
