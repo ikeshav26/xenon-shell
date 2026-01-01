@@ -25,7 +25,7 @@ Rectangle {
     required property string time
     property bool floating: true
     
-    // Track the state of the tray drawer
+
     property bool trayOpen: false
 
     property var volumeService
@@ -294,28 +294,26 @@ Rectangle {
 
         Item { Layout.fillWidth: true }
 
-        // --------------------------------------------------------
-        // Collapsible System Tray
-        // --------------------------------------------------------
+        
         RowLayout {
             visible: SystemTray.items.values.length > 0
-            spacing: 2 // Gap between arrow and drawer
+            spacing: 2 
 
-            // 1. The Sliding Drawer (Contains the Apps)
+            
             Rectangle {
                 clip: true
                 height: 26
                 radius: height / 2
-                color: Qt.rgba(0, 0, 0, 0.2) // Darker background for tray items
+                color: Qt.rgba(0, 0, 0, 0.2) 
                 border.color: colors.muted
                 border.width: 1
 
-                // Animations for smooth slide effect
+                
                 Layout.preferredWidth: trayOpen ? (trayInner.implicitWidth + 16) : 0
                 Layout.rightMargin: trayOpen ? 4 : 0
                 opacity: trayOpen ? 1 : 0
 
-                // Premium easing for the slide
+
                 Behavior on Layout.preferredWidth {
                     NumberAnimation { duration: 350; easing.type: Easing.OutQuart }
                 }
@@ -326,21 +324,21 @@ Rectangle {
                     NumberAnimation { duration: 250 }
                 }
 
-                // The actual Tray Icons
+
                 RowLayout {
                     id: trayInner
                     anchors.centerIn: parent
                     spacing: 8
                     
                     Tray {
-                        borderColor: "transparent" // Remove individual borders
+                        borderColor: "transparent" 
                         itemHoverColor: colors.accent
                         iconSize: 16
                     }
                 }
             }
 
-            // 2. The Toggle Arrow Button
+
             Rectangle {
                 Layout.preferredWidth: 26
                 Layout.preferredHeight: 26
@@ -351,12 +349,12 @@ Rectangle {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "" // Nerd Font Chevron Left (points to the drawer)
+                    text: "" 
                     font.family: "Symbols Nerd Font"
                     font.pixelSize: 14
                     color: trayOpen ? colors.bg : colors.fg
                     
-                    // Rotate the arrow when opened
+
                     rotation: trayOpen ? 180 : 0 
                     Behavior on rotation {
                         NumberAnimation { duration: 300; easing.type: Easing.OutBack }
@@ -370,7 +368,6 @@ Rectangle {
                     hoverEnabled: true
                     onClicked: barRoot.trayOpen = !barRoot.trayOpen
                     
-                    // Hover effect
                     onEntered: parent.border.color = colors.accent
                     onExited: parent.border.color = colors.muted
                 }

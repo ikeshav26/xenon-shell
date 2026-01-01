@@ -8,24 +8,23 @@ RowLayout {
     
     spacing: 6
     
-    // Configuration properties
+    
     property color borderColor: "#ffffff"
     property color itemHoverColor: "#89b4fa"
     property int iconSize: 16
-    property var pinnedApps: []  // Array of app names to always show
-    property var blacklist: []   // Array of app names to hide
-    property bool hidePassive: false  // Hide passive status items
+    property var pinnedApps: []  
+    property var blacklist: []   
+    property bool hidePassive: false  
     
-    // Filter tray items
+    
     property var visibleItems: {
         var items = SystemTray.items.values || []
         return items.filter(item => {
-            // Hide blacklisted apps
             if (blacklist.some(name => item.id.toLowerCase().includes(name.toLowerCase()))) {
                 return false
             }
             
-            // Hide passive items if enabled
+
             if (hidePassive && item.status === SystemTrayStatus.Passive) {
                 return false
             }
@@ -34,7 +33,7 @@ RowLayout {
         })
     }
     
-    // Monitor changes to SystemTray items
+    
     Connections {
         target: SystemTray.items
         function onValuesChanged() {
@@ -53,7 +52,7 @@ RowLayout {
         }
     }
     
-    // Display tray icons
+
     Repeater {
         model: trayRoot.visibleItems
         
@@ -72,11 +71,11 @@ RowLayout {
                 fillMode: Image.PreserveAspectFit
                 smooth: true
                 
-                // Fallback if icon doesn't load
+
                 visible: status === Image.Ready || status === Image.Loading
             }
             
-            // Fallback text if icon fails
+
             Text {
                 anchors.centerIn: parent
                 text: trayIcon.status === Image.Error ? "?" : ""
