@@ -12,75 +12,104 @@ PanelWindow {
     required property var manager
     required property Colors colors
     readonly property var theme: colors
+    property bool hovered: listHover.hovered
 
     WlrLayershell.margins.top: 60
     WlrLayershell.margins.right: 10
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "notifications-toast"
     WlrLayershell.exclusiveZone: -1
-    
     // Width fixed, height grows with content up to a limit
     implicitWidth: 360
     implicitHeight: Math.min(contentList.contentHeight, 500) + 40 // More padding for badge
     color: "transparent"
+    // Only show window if there are notifications
+    visible: manager.activeNotifications.count > 0
 
     anchors {
         top: true
         right: true
     }
-    
-    // Only show window if there are notifications
-    visible: manager.activeNotifications.count > 0
-
-    property bool hovered: listHover.hovered
 
     ListView {
         id: contentList
+
         anchors.fill: parent
         anchors.margins: 10
         spacing: 15
         model: manager.activeNotifications
         clip: false
         interactive: false // No scrolling
-        
+
         HoverHandler {
             id: listHover
         }
-        
+
         // Transitions
         add: Transition {
-            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 200 }
-            NumberAnimation { property: "y"; from: -50; duration: 200; easing.type: Easing.OutQuad }
+            NumberAnimation {
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: 200
+            }
+
+            NumberAnimation {
+                property: "y"
+                from: -50
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+
         }
-        
+
         remove: Transition {
-            NumberAnimation { property: "opacity"; to: 0; duration: 200 }
-            NumberAnimation { property: "x"; to: 350; duration: 200; easing.type: Easing.InQuad }
+            NumberAnimation {
+                property: "opacity"
+                to: 0
+                duration: 200
+            }
+
+            NumberAnimation {
+                property: "x"
+                to: 350
+                duration: 200
+                easing.type: Easing.InQuad
+            }
+
         }
-        
+
         displaced: Transition {
-            NumberAnimation { property: "y"; duration: 200; easing.type: Easing.OutQuad }
+            NumberAnimation {
+                property: "y"
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+
         }
 
         delegate: Item {
             id: delegateRoot
+
             width: 320
             height: visible ? implicitHeight : 0 // Collapse hidden items
             implicitHeight: mainLayout.implicitHeight + 24
-            
             // Only show top 2
             visible: index < 2
             opacity: visible ? 1 : 0
-            
+            // Shadows per item
+            layer.enabled: true
+
             // Render the notification content
             Rectangle {
                 id: bgRect
+
                 anchors.fill: parent
                 radius: 20
                 color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.95)
                 border.width: 1
                 border.color: model.urgency === 2 ? theme.urgent : Qt.rgba(theme.border.r, theme.border.g, theme.border.b, 0.5)
-                
+
                 // Stack indicator badge
                 Rectangle {
                     visible: index === 1 && manager.activeNotifications.count > 2
@@ -92,7 +121,7 @@ PanelWindow {
                     anchors.right: parent.right
                     anchors.margins: -8 // Offset to pop out a bit
                     z: 10
-                    
+
                     Text {
                         anchors.centerIn: parent
                         text: "+" + (manager.activeNotifications.count - 2)
@@ -100,28 +129,32 @@ PanelWindow {
                         font.pixelSize: 11
                         font.bold: true
                     }
+
                 }
-                
+
                 MouseArea {
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     onClicked: (mouse) => {
-                         // Dismiss this specific notification
-                         manager.removeById(model.id);
+                        // Dismiss this specific notification
+                        manager.removeById(model.id);
                     }
-                    
+
                     HoverHandler {
-                         id: toastHandler
-                         cursorShape: Qt.PointingHandCursor
+                        id: toastHandler
+
+                        cursorShape: Qt.PointingHandCursor
                     }
+
                 }
-                
+
                 RowLayout {
                     id: mainLayout
+
                     anchors.fill: parent
                     anchors.margins: 12
                     spacing: 12
-                    
+
                     // Icon / Image
                     Rectangle {
                         Layout.preferredWidth: 40
@@ -129,25 +162,42 @@ PanelWindow {
                         Layout.alignment: Qt.AlignVCenter
                         radius: 12
                         color: theme.surface
-                        
+
                         Image {
                             id: imgDisplay
+
                             anchors.fill: parent
                             fillMode: Image.PreserveAspectCrop
                             layer.enabled: true
                             source: {
-                                if (model.image && model.image.startsWith("/")) return "file://" + model.image;
-                                if (model.image && model.image.includes("://")) return model.image;
-                                if (model.appIcon && model.appIcon.includes("/")) return "file://" + model.appIcon;
-                                if (model.appIcon) return "image://icon/" + model.appIcon;
+                                if (model.image && model.image.startsWith("/"))
+                                    return "file://" + model.image;
+
+                                if (model.image && model.image.includes("://"))
+                                    return model.image;
+
+                                if (model.appIcon && model.appIcon.includes("/"))
+                                    return "file://" + model.appIcon;
+
+                                if (model.appIcon)
+                                    return "image://icon/" + model.appIcon;
+
                                 return "";
                             }
                             visible: status === Image.Ready
+
                             layer.effect: OpacityMask {
-                                maskSource: Rectangle { width: 40; height: 40; radius: 12 }
+
+                                maskSource: Rectangle {
+                                    width: 40
+                                    height: 40
+                                    radius: 12
+                                }
+
                             }
+
                         }
-                        
+
                         Text {
                             anchors.centerIn: parent
                             text: "󰂚"
@@ -156,14 +206,15 @@ PanelWindow {
                             color: theme.subtext
                             visible: !imgDisplay.visible
                         }
+
                     }
-                    
+
                     // Text Content
                     ColumnLayout {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignVCenter
                         spacing: 2
-                        
+
                         Text {
                             text: model.summary || "Notification"
                             Layout.fillWidth: true
@@ -172,7 +223,7 @@ PanelWindow {
                             color: theme.text
                             elide: Text.ElideRight
                         }
-                        
+
                         Text {
                             text: model.body || ""
                             Layout.fillWidth: true
@@ -184,19 +235,21 @@ PanelWindow {
                             maximumLineCount: 2
                             lineHeight: 1.1
                         }
+
                     }
-                    
+
                     // Circular Timer + Close
                     Item {
                         Layout.preferredWidth: 24
                         Layout.preferredHeight: 24
                         Layout.alignment: Qt.AlignVCenter
-                        
+
                         Canvas {
                             id: timerCanvas
-                            anchors.fill: parent
+
                             property real progress: 0
-                            
+
+                            anchors.fill: parent
                             onProgressChanged: requestPaint()
                             onPaint: {
                                 var ctx = getContext("2d");
@@ -217,8 +270,8 @@ PanelWindow {
                                 ctx.lineWidth = 2;
                                 ctx.stroke();
                             }
-                            
-                            // Animate based on remaining time? 
+
+                            // Animate based on remaining time?
                             // Since we have a centralized timer, maybe just animate assuming 5s lifetime
                             NumberAnimation on progress {
                                 from: 1
@@ -226,8 +279,9 @@ PanelWindow {
                                 duration: 5000 // Match manager expire time
                                 running: true
                             }
+
                         }
-                        
+
                         Text {
                             anchors.centerIn: parent
                             text: "✕"
@@ -235,12 +289,13 @@ PanelWindow {
                             font.pixelSize: 10
                             opacity: 0.5
                         }
+
                     }
+
                 }
+
             }
-            
-            // Shadows per item
-            layer.enabled: true
+
             layer.effect: DropShadow {
                 transparentBorder: true
                 radius: 12
@@ -249,10 +304,13 @@ PanelWindow {
                 verticalOffset: 4
                 spread: 0
             }
+
         }
+
     }
-    
+
     mask: Region {
         item: contentList
     }
+
 }

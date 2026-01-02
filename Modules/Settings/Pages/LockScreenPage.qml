@@ -3,13 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Core
-import qs.Widgets
 import qs.Services
+import qs.Widgets
 
 ColumnLayout {
-    spacing: 16
     property var context // Injected context
     property var colors: context.colors
+
+    spacing: 16
 
     Text {
         text: "Lock Screen"
@@ -27,9 +28,9 @@ ColumnLayout {
         active: !Config.disableLockBlur
         theme: colors
         onActiveChanged: {
-            if (active !== !Config.disableLockBlur) {
-                Config.disableLockBlur = !active
-            }
+            if (active !== !Config.disableLockBlur)
+                Config.disableLockBlur = !active;
+
         }
     }
 
@@ -41,9 +42,9 @@ ColumnLayout {
         active: !Config.disableLockAnimation
         theme: colors
         onActiveChanged: {
-            if (active !== !Config.disableLockAnimation) {
-                Config.disableLockAnimation = !active
-            }
+            if (active !== !Config.disableLockAnimation)
+                Config.disableLockAnimation = !active;
+
         }
     }
 
@@ -55,9 +56,10 @@ ColumnLayout {
         active: Config.lockScreenCustomBackground
         theme: colors
         onActiveChanged: {
-            if (active !== Config.lockScreenCustomBackground) {
-                Config.lockScreenCustomBackground = active
-            }
+            if (active !== Config.lockScreenCustomBackground)
+                Config.lockScreenCustomBackground = active;
+
         }
     }
+
 }

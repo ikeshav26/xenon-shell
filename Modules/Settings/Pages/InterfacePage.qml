@@ -3,13 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Core
-import qs.Widgets
 import qs.Services
+import qs.Widgets
 
 ColumnLayout {
-    spacing: 16
     property var context
     property var colors: context.colors
+
+    spacing: 16
 
     Text {
         text: "Interface"
@@ -27,7 +28,10 @@ ColumnLayout {
         active: Config.disableHover
         theme: colors
         onActiveChanged: {
-             if (Config.disableHover !== active) Config.disableHover = active
+            if (Config.disableHover !== active)
+                Config.disableHover = active;
+
         }
     }
+
 }

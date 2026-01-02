@@ -26,13 +26,14 @@ Item {
         // Capture stdout as it comes in
         stdout: SplitParser {
             onRead: (data) => {
+                // Logger.d("MemService", "No data received");
+                // Logger.d("MemService", "Empty output after trim");
+
                 if (!data)
-                    // Logger.d("MemService", "No data received");
                     return ;
 
                 var output = data.trim();
                 if (output === "")
-                    // Logger.d("MemService", "Empty output after trim");
                     return ;
 
                 // Split by whitespace

@@ -3,10 +3,10 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Services.Notifications
 import Quickshell.Wayland
 import qs.Core
 import qs.Services
-import Quickshell.Services.Notifications
 
 WlSessionLockSurface {
     id: root
@@ -14,41 +14,49 @@ WlSessionLockSurface {
     required property var lock
     required property var pam
     required property var colors
-
-    color: "black"
-
     // Animation properties
     property bool expanded: Config.disableLockAnimation
     property real expandedWidth: Math.min(width - 60, 920)
     property real expandedHeight: Math.min(height - 80, 480)
     property real collapsedSize: 120
 
+    color: "black"
+
     // Notifications
-    ListModel { id: notifications }
+    ListModel {
+        id: notifications
+    }
 
     // Local system services (avoid Context singleton to prevent crashes)
-    CpuService { id: cpuService }
-    MemService { id: memService }
+    CpuService {
+        id: cpuService
+    }
+
+    MemService {
+        id: memService
+    }
 
     NotificationServer {
         id: server
+
         bodySupported: true
         imageSupported: true
         onNotification: (n) => {
-            n.tracked = true
+            n.tracked = true;
             notifications.insert(0, {
-                summary: n.summary || "Notification",
-                body: n.body || "",
-                appName: n.appName || "",
-                appIcon: n.appIcon || "",
-                time: Qt.formatTime(new Date(), "hh:mm")
-            })
+                "summary": n.summary || "Notification",
+                "body": n.body || "",
+                "appName": n.appName || "",
+                "appIcon": n.appIcon || "",
+                "time": Qt.formatTime(new Date(), "hh:mm")
+            });
         }
     }
 
     // Background Container
     Item {
         id: bg
+
         anchors.fill: parent
         opacity: Config.disableLockAnimation ? 1 : 0
 
@@ -64,8 +72,8 @@ WlSessionLockSurface {
                 radius: 48
                 transparentBorder: true
             }
-        }
 
+        }
 
         // Wallpaper Background (Custom)
         Image {
@@ -73,18 +81,21 @@ WlSessionLockSurface {
             source: Config.lockScreenCustomBackground ? ("file://" + WallpaperService.getWallpaper(root.screen.name)) : ""
             fillMode: Image.PreserveAspectCrop
             visible: Config.lockScreenCustomBackground
-            
             layer.enabled: visible && bg.opacity > 0 && !Config.disableLockBlur
+
             layer.effect: FastBlur {
                 radius: 48
                 transparentBorder: true
             }
+
         }
+
     }
 
     // Dark overlay
     Rectangle {
         id: overlay
+
         anchors.fill: parent
         color: "#000000"
         opacity: Config.disableLockAnimation ? 0.45 : 0
@@ -93,40 +104,22 @@ WlSessionLockSurface {
     // Morphing container - starts as lock icon, expands to bento grid
     Rectangle {
         id: morphContainer
+
         anchors.centerIn: parent
-        
         // Animated dimensions
         width: root.expanded ? root.expandedWidth : root.collapsedSize
         height: root.expanded ? root.expandedHeight : root.collapsedSize
-        
         color: Qt.rgba(root.colors.surface.r, root.colors.surface.g, root.colors.surface.b, 0.9)
         radius: root.expanded ? 20 : 30
         border.width: root.expanded ? 0 : 2
         border.color: root.colors.accent
-        
         scale: Config.disableLockAnimation ? 1 : 0
         rotation: Config.disableLockAnimation ? 0 : -180
-        
-        Behavior on width {
-            enabled: !Config.disableLockAnimation
-            NumberAnimation { duration: 500; easing.type: Easing.OutBack; easing.overshoot: 1.02 }
-        }
-        Behavior on height {
-            enabled: !Config.disableLockAnimation
-            NumberAnimation { duration: 500; easing.type: Easing.OutBack; easing.overshoot: 1.02 }
-        }
-        Behavior on radius {
-            enabled: !Config.disableLockAnimation
-            NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
-        }
-        Behavior on border.width {
-            enabled: !Config.disableLockAnimation
-            NumberAnimation { duration: 200 }
-        }
 
         // Lock icon (visible when collapsed)
         Text {
             id: lockIcon
+
             anchors.centerIn: parent
             text: "󰌾"
             font.family: "Symbols Nerd Font"
@@ -134,33 +127,37 @@ WlSessionLockSurface {
             color: root.colors.accent
             opacity: root.expanded ? 0 : 1
             scale: root.expanded ? 0.5 : 1
-            
+
             Behavior on opacity {
                 enabled: !Config.disableLockAnimation
-                NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+
+                NumberAnimation {
+                    duration: 300
+                    easing.type: Easing.OutCubic
+                }
+
             }
+
             Behavior on scale {
                 enabled: !Config.disableLockAnimation
-                NumberAnimation { duration: 300; easing.type: Easing.OutCubic }
+
+                NumberAnimation {
+                    duration: 300
+                    easing.type: Easing.OutCubic
+                }
+
             }
+
         }
 
         // Bento grid content (visible when expanded)
         Item {
             id: bentoContent
+
             anchors.fill: parent
             anchors.margins: 12
             opacity: root.expanded ? 1 : 0
             scale: root.expanded ? 1 : 0.8
-            
-            Behavior on opacity {
-                enabled: !Config.disableLockAnimation
-                NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
-            }
-            Behavior on scale {
-                enabled: !Config.disableLockAnimation
-                NumberAnimation { duration: 400; easing.type: Easing.OutCubic }
-            }
 
             RowLayout {
                 anchors.fill: parent
@@ -169,31 +166,32 @@ WlSessionLockSurface {
 
                 // LEFT COLUMN
                 ColumnLayout {
-                    Layout.preferredWidth: (parent.width - 24) * 0.30
+                    Layout.preferredWidth: (parent.width - 24) * 0.3
                     Layout.fillHeight: true
                     spacing: 12
 
                     // Clock Card (Binary Clock - BCD Format)
                     BentoCard {
                         id: clockCard
-                        Layout.fillWidth: true
-                        Layout.fillHeight: true
-                        cardColor: root.colors.surface
-                        borderColor: root.colors.border
 
                         property int hours: new Date().getHours()
                         property int minutes: new Date().getMinutes()
                         property int seconds: new Date().getSeconds()
+
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        cardColor: root.colors.surface
+                        borderColor: root.colors.border
 
                         Timer {
                             interval: 1000
                             running: true
                             repeat: true
                             onTriggered: {
-                                var now = new Date()
-                                clockCard.hours = now.getHours()
-                                clockCard.minutes = now.getMinutes()
-                                clockCard.seconds = now.getSeconds()
+                                var now = new Date();
+                                clockCard.hours = now.getHours();
+                                clockCard.minutes = now.getMinutes();
+                                clockCard.seconds = now.getSeconds();
                             }
                         }
 
@@ -209,29 +207,81 @@ WlSessionLockSurface {
                                 // Hours (H1: 2 bits, H2: 4 bits)
                                 RowLayout {
                                     spacing: 4
-                                    BinaryColumn { value: Math.floor(clockCard.hours / 10); bits: 2; dotSize: 10; activeColor: root.colors.accent }
-                                    BinaryColumn { value: clockCard.hours % 10; bits: 4; dotSize: 10; activeColor: root.colors.accent }
+
+                                    BinaryColumn {
+                                        value: Math.floor(clockCard.hours / 10)
+                                        bits: 2
+                                        dotSize: 10
+                                        activeColor: root.colors.accent
+                                    }
+
+                                    BinaryColumn {
+                                        value: clockCard.hours % 10
+                                        bits: 4
+                                        dotSize: 10
+                                        activeColor: root.colors.accent
+                                    }
+
                                 }
 
                                 // Separator
-                                Rectangle { width: 2; height: 60; radius: 1; color: root.colors.border; opacity: 0.4 }
+                                Rectangle {
+                                    width: 2
+                                    height: 60
+                                    radius: 1
+                                    color: root.colors.border
+                                    opacity: 0.4
+                                }
 
                                 // Minutes (M1: 3 bits, M2: 4 bits)
                                 RowLayout {
                                     spacing: 4
-                                    BinaryColumn { value: Math.floor(clockCard.minutes / 10); bits: 3; dotSize: 10; activeColor: root.colors.secondary }
-                                    BinaryColumn { value: clockCard.minutes % 10; bits: 4; dotSize: 10; activeColor: root.colors.secondary }
+
+                                    BinaryColumn {
+                                        value: Math.floor(clockCard.minutes / 10)
+                                        bits: 3
+                                        dotSize: 10
+                                        activeColor: root.colors.secondary
+                                    }
+
+                                    BinaryColumn {
+                                        value: clockCard.minutes % 10
+                                        bits: 4
+                                        dotSize: 10
+                                        activeColor: root.colors.secondary
+                                    }
+
                                 }
 
                                 // Separator
-                                Rectangle { width: 2; height: 60; radius: 1; color: root.colors.border; opacity: 0.4 }
+                                Rectangle {
+                                    width: 2
+                                    height: 60
+                                    radius: 1
+                                    color: root.colors.border
+                                    opacity: 0.4
+                                }
 
                                 // Seconds (S1: 3 bits, S2: 4 bits)
                                 RowLayout {
                                     spacing: 4
-                                    BinaryColumn { value: Math.floor(clockCard.seconds / 10); bits: 3; dotSize: 10; activeColor: root.colors.tertiary }
-                                    BinaryColumn { value: clockCard.seconds % 10; bits: 4; dotSize: 10; activeColor: root.colors.tertiary }
+
+                                    BinaryColumn {
+                                        value: Math.floor(clockCard.seconds / 10)
+                                        bits: 3
+                                        dotSize: 10
+                                        activeColor: root.colors.tertiary
+                                    }
+
+                                    BinaryColumn {
+                                        value: clockCard.seconds % 10
+                                        bits: 4
+                                        dotSize: 10
+                                        activeColor: root.colors.tertiary
+                                    }
+
                                 }
+
                             }
 
                             // Digital time below
@@ -251,7 +301,9 @@ WlSessionLockSurface {
                                 color: root.colors.muted
                                 Layout.alignment: Qt.AlignHCenter
                             }
+
                         }
+
                     }
 
                     // Music Card
@@ -270,7 +322,11 @@ WlSessionLockSurface {
                             visible: MprisService.artUrl !== ""
                             opacity: 0.2
                             layer.enabled: visible
-                            layer.effect: FastBlur { radius: 32 }
+
+                            layer.effect: FastBlur {
+                                radius: 32
+                            }
+
                         }
 
                         ColumnLayout {
@@ -305,6 +361,7 @@ WlSessionLockSurface {
                                         color: root.colors.muted
                                         visible: MprisService.artUrl === ""
                                     }
+
                                 }
 
                                 ColumnLayout {
@@ -312,7 +369,9 @@ WlSessionLockSurface {
                                     Layout.fillHeight: true
                                     spacing: 2
 
-                                    Item { Layout.fillHeight: true }
+                                    Item {
+                                        Layout.fillHeight: true
+                                    }
 
                                     Text {
                                         text: MprisService.title || "No Media Playing"
@@ -331,8 +390,12 @@ WlSessionLockSurface {
                                         elide: Text.ElideRight
                                     }
 
-                                    Item { Layout.fillHeight: true }
+                                    Item {
+                                        Layout.fillHeight: true
+                                    }
+
                                 }
+
                             }
 
                             // Playback controls centered
@@ -356,6 +419,7 @@ WlSessionLockSurface {
                                         onEntered: parent.opacity = 1
                                         onExited: parent.opacity = 0.8
                                     }
+
                                 }
 
                                 Rectangle {
@@ -377,6 +441,7 @@ WlSessionLockSurface {
                                         onClicked: MprisService.playPause()
                                         cursorShape: Qt.PointingHandCursor
                                     }
+
                                 }
 
                                 Text {
@@ -395,15 +460,20 @@ WlSessionLockSurface {
                                         onEntered: parent.opacity = 1
                                         onExited: parent.opacity = 0.8
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
 
                 // CENTER COLUMN
                 ColumnLayout {
-                    Layout.preferredWidth: (parent.width - 24) * 0.40
+                    Layout.preferredWidth: (parent.width - 24) * 0.4
                     Layout.fillHeight: true
                     spacing: 12
 
@@ -451,17 +521,41 @@ WlSessionLockSurface {
 
                                 // System info rows
                                 Repeater {
-                                    model: [
-                                        { label: "OS", value: "Arch Linux", icon: "", color: root.colors.blue },
-                                        { label: "Host", value: "archbtw", icon: "", color: root.colors.purple },
-                                        { label: "Kernel", value: "6.18.2-arch2-1", icon: "", color: root.colors.green },
-                                        { label: "Uptime", value: "3 hours", icon: "", color: root.colors.yellow },
-                                        { label: "Shell", value: "zsh", icon: "", color: root.colors.orange },
-                                        { label: "WM", value: "Hyprland", icon: "", color: root.colors.red }
-                                    ]
+                                    model: [{
+                                        "label": "OS",
+                                        "value": "Arch Linux",
+                                        "icon": "",
+                                        "color": root.colors.blue
+                                    }, {
+                                        "label": "Host",
+                                        "value": "archbtw",
+                                        "icon": "",
+                                        "color": root.colors.purple
+                                    }, {
+                                        "label": "Kernel",
+                                        "value": "6.18.2-arch2-1",
+                                        "icon": "",
+                                        "color": root.colors.green
+                                    }, {
+                                        "label": "Uptime",
+                                        "value": "3 hours",
+                                        "icon": "",
+                                        "color": root.colors.yellow
+                                    }, {
+                                        "label": "Shell",
+                                        "value": "zsh",
+                                        "icon": "",
+                                        "color": root.colors.orange
+                                    }, {
+                                        "label": "WM",
+                                        "value": "Hyprland",
+                                        "icon": "",
+                                        "color": root.colors.red
+                                    }]
 
                                     RowLayout {
                                         required property var modelData
+
                                         spacing: 10
 
                                         Text {
@@ -485,7 +579,9 @@ WlSessionLockSurface {
                                             font.pixelSize: 13
                                             font.family: "JetBrainsMono Nerd Font"
                                         }
+
                                     }
+
                                 }
 
                                 // Color palette
@@ -495,17 +591,24 @@ WlSessionLockSurface {
 
                                     Repeater {
                                         model: [root.colors.red, root.colors.green, root.colors.yellow, root.colors.blue, root.colors.purple, root.colors.teal]
+
                                         Rectangle {
                                             required property color modelData
+
                                             width: 22
                                             height: 11
                                             radius: 2
                                             color: modelData
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
 
                     // Password Card
@@ -525,80 +628,159 @@ WlSessionLockSurface {
                                 spacing: 10
 
                                 Rectangle {
-                                    width: 44; height: 44; radius: 22
+                                    width: 44
+                                    height: 44
+                                    radius: 22
                                     color: root.colors.surface
-                                    border.width: 2; border.color: root.colors.accent
+                                    border.width: 2
+                                    border.color: root.colors.accent
 
                                     Image {
                                         id: avatarImg
-                                        anchors.fill: parent; anchors.margins: 2
+
+                                        anchors.fill: parent
+                                        anchors.margins: 2
                                         source: "file://" + Quickshell.env("HOME") + "/.face"
                                         fillMode: Image.PreserveAspectCrop
                                         layer.enabled: status === Image.Ready
-                                        layer.effect: OpacityMask { maskSource: Rectangle { width: avatarImg.width; height: avatarImg.height; radius: width / 2 } }
+
+                                        layer.effect: OpacityMask {
+
+                                            maskSource: Rectangle {
+                                                width: avatarImg.width
+                                                height: avatarImg.height
+                                                radius: width / 2
+                                            }
+
+                                        }
+
                                     }
 
-                                    Text { anchors.centerIn: parent; text: "󰀄"; font.family: "Symbols Nerd Font"; font.pixelSize: 20; color: root.colors.muted; visible: avatarImg.status !== Image.Ready }
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "󰀄"
+                                        font.family: "Symbols Nerd Font"
+                                        font.pixelSize: 20
+                                        color: root.colors.muted
+                                        visible: avatarImg.status !== Image.Ready
+                                    }
+
                                 }
 
-                                Text { text: Quickshell.env("USER") || "User"; color: root.colors.fg; font.pixelSize: 13; font.bold: true }
+                                Text {
+                                    text: Quickshell.env("USER") || "User"
+                                    color: root.colors.fg
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                }
+
                             }
 
                             Rectangle {
-                                Layout.fillWidth: true; height: 36; radius: 18
+                                Layout.fillWidth: true
+                                height: 36
+                                radius: 18
                                 color: Qt.rgba(0, 0, 0, 0.35)
-                                border.width: 1; border.color: inputField.activeFocus ? root.colors.accent : "transparent"
+                                border.width: 1
+                                border.color: inputField.activeFocus ? root.colors.accent : "transparent"
 
                                 TextInput {
                                     id: inputField
+
                                     property int shakeOffset: 0
-                                    anchors.fill: parent; anchors.leftMargin: 14; anchors.rightMargin: 14
-                                    verticalAlignment: TextInput.AlignVCenter; horizontalAlignment: TextInput.AlignHCenter
-                                    color: root.colors.fg; font.pixelSize: 13; font.letterSpacing: 3
-                                    echoMode: TextInput.Password; passwordCharacter: "●"
+
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 14
+                                    anchors.rightMargin: 14
+                                    verticalAlignment: TextInput.AlignVCenter
+                                    horizontalAlignment: TextInput.AlignHCenter
+                                    color: root.colors.fg
+                                    font.pixelSize: 13
+                                    font.letterSpacing: 3
+                                    echoMode: TextInput.Password
+                                    passwordCharacter: "●"
                                     focus: true
                                     Component.onCompleted: forceActiveFocus()
-                                    onAccepted: { if (text.length > 0) { root.pam.submit(text); text = "" } }
+                                    onAccepted: {
+                                        if (text.length > 0) {
+                                            root.pam.submit(text);
+                                            text = "";
+                                        }
+                                    }
                                     x: anchors.leftMargin + shakeOffset
 
-                                    Text { anchors.centerIn: parent; text: "Enter password"; color: root.colors.muted; font.pixelSize: 11; visible: !parent.text && !parent.activeFocus }
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Enter password"
+                                        color: root.colors.muted
+                                        font.pixelSize: 11
+                                        visible: !parent.text && !parent.activeFocus
+                                    }
 
                                     SequentialAnimation {
                                         id: shakeAnim
+
                                         loops: 2
-                                        PropertyAnimation { target: inputField; property: "shakeOffset"; to: 8; duration: 40 }
-                                        PropertyAnimation { target: inputField; property: "shakeOffset"; to: -8; duration: 40 }
-                                        PropertyAnimation { target: inputField; property: "shakeOffset"; to: 0; duration: 40 }
+
+                                        PropertyAnimation {
+                                            target: inputField
+                                            property: "shakeOffset"
+                                            to: 8
+                                            duration: 40
+                                        }
+
+                                        PropertyAnimation {
+                                            target: inputField
+                                            property: "shakeOffset"
+                                            to: -8
+                                            duration: 40
+                                        }
+
+                                        PropertyAnimation {
+                                            target: inputField
+                                            property: "shakeOffset"
+                                            to: 0
+                                            duration: 40
+                                        }
+
                                     }
 
                                     Connections {
-                                        target: root.pam
                                         function onFailure() {
-                                            shakeAnim.start()
-                                            inputField.color = root.colors.urgent
-                                            failTimer.start()
+                                            shakeAnim.start();
+                                            inputField.color = root.colors.urgent;
+                                            failTimer.start();
                                         }
+
                                         function onError() {
-                                            shakeAnim.start()
-                                            inputField.color = root.colors.urgent
-                                            failTimer.start()
+                                            shakeAnim.start();
+                                            inputField.color = root.colors.urgent;
+                                            failTimer.start();
                                         }
+
+                                        target: root.pam
                                     }
 
                                     Timer {
                                         id: failTimer
+
                                         interval: 1000
                                         onTriggered: inputField.color = root.colors.fg
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
 
                 // RIGHT COLUMN
                 ColumnLayout {
-                    Layout.preferredWidth: (parent.width - 24) * 0.30
+                    Layout.preferredWidth: (parent.width - 24) * 0.3
                     Layout.fillHeight: true
                     spacing: 12
 
@@ -632,6 +814,7 @@ WlSessionLockSurface {
                                         font.pixelSize: 12
                                         color: root.colors.accent
                                     }
+
                                 }
 
                                 Text {
@@ -640,6 +823,7 @@ WlSessionLockSurface {
                                     font.pixelSize: 12
                                     font.bold: true
                                 }
+
                             }
 
                             // Large CPU & RAM rings
@@ -656,30 +840,29 @@ WlSessionLockSurface {
 
                                     Canvas {
                                         id: cpuCanvas
+
+                                        property real progress: cpuService.usage / 100
+
                                         anchors.centerIn: parent
                                         width: 70
                                         height: 70
-
-                                        property real progress: cpuService.usage / 100
                                         onProgressChanged: requestPaint()
-
                                         onPaint: {
-                                            var ctx = getContext("2d")
-                                            ctx.reset()
-                                            var cx = width / 2, cy = height / 2, r = 28, lw = 6
-                                            ctx.beginPath()
-                                            ctx.arc(cx, cy, r, 0, 2 * Math.PI)
-                                            ctx.strokeStyle = Qt.rgba(root.colors.muted.r, root.colors.muted.g, root.colors.muted.b, 0.15)
-                                            ctx.lineWidth = lw
-                                            ctx.stroke()
-                                            ctx.beginPath()
-                                            ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * progress))
-                                            ctx.strokeStyle = root.colors.accent
-                                            ctx.lineCap = "round"
-                                            ctx.lineWidth = lw
-                                            ctx.stroke()
+                                            var ctx = getContext("2d");
+                                            ctx.reset();
+                                            var cx = width / 2, cy = height / 2, r = 28, lw = 6;
+                                            ctx.beginPath();
+                                            ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                                            ctx.strokeStyle = Qt.rgba(root.colors.muted.r, root.colors.muted.g, root.colors.muted.b, 0.15);
+                                            ctx.lineWidth = lw;
+                                            ctx.stroke();
+                                            ctx.beginPath();
+                                            ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * progress));
+                                            ctx.strokeStyle = root.colors.accent;
+                                            ctx.lineCap = "round";
+                                            ctx.lineWidth = lw;
+                                            ctx.stroke();
                                         }
-
                                         Component.onCompleted: requestPaint()
                                     }
 
@@ -702,7 +885,9 @@ WlSessionLockSurface {
                                             font.bold: true
                                             Layout.alignment: Qt.AlignHCenter
                                         }
+
                                     }
+
                                 }
 
                                 // RAM
@@ -713,30 +898,29 @@ WlSessionLockSurface {
 
                                     Canvas {
                                         id: ramCanvas
+
+                                        property real progress: memService.usage / 100
+
                                         anchors.centerIn: parent
                                         width: 70
                                         height: 70
-
-                                        property real progress: memService.usage / 100
                                         onProgressChanged: requestPaint()
-
                                         onPaint: {
-                                            var ctx = getContext("2d")
-                                            ctx.reset()
-                                            var cx = width / 2, cy = height / 2, r = 28, lw = 6
-                                            ctx.beginPath()
-                                            ctx.arc(cx, cy, r, 0, 2 * Math.PI)
-                                            ctx.strokeStyle = Qt.rgba(root.colors.muted.r, root.colors.muted.g, root.colors.muted.b, 0.15)
-                                            ctx.lineWidth = lw
-                                            ctx.stroke()
-                                            ctx.beginPath()
-                                            ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * progress))
-                                            ctx.strokeStyle = root.colors.secondary
-                                            ctx.lineCap = "round"
-                                            ctx.lineWidth = lw
-                                            ctx.stroke()
+                                            var ctx = getContext("2d");
+                                            ctx.reset();
+                                            var cx = width / 2, cy = height / 2, r = 28, lw = 6;
+                                            ctx.beginPath();
+                                            ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                                            ctx.strokeStyle = Qt.rgba(root.colors.muted.r, root.colors.muted.g, root.colors.muted.b, 0.15);
+                                            ctx.lineWidth = lw;
+                                            ctx.stroke();
+                                            ctx.beginPath();
+                                            ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * progress));
+                                            ctx.strokeStyle = root.colors.secondary;
+                                            ctx.lineCap = "round";
+                                            ctx.lineWidth = lw;
+                                            ctx.stroke();
                                         }
-
                                         Component.onCompleted: requestPaint()
                                     }
 
@@ -759,10 +943,15 @@ WlSessionLockSurface {
                                             font.bold: true
                                             Layout.alignment: Qt.AlignHCenter
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
 
                     // Notifications Card
@@ -787,7 +976,9 @@ WlSessionLockSurface {
                                     font.bold: true
                                 }
 
-                                Item { Layout.fillWidth: true }
+                                Item {
+                                    Layout.fillWidth: true
+                                }
 
                                 Text {
                                     text: notifications.count > 0 ? notifications.count.toString() : ""
@@ -796,6 +987,7 @@ WlSessionLockSurface {
                                     font.bold: true
                                     visible: notifications.count > 0
                                 }
+
                             }
 
                             Rectangle {
@@ -832,6 +1024,7 @@ WlSessionLockSurface {
                                         font.pixelSize: 10
                                         Layout.alignment: Qt.AlignHCenter
                                     }
+
                                 }
 
                                 // Notification list
@@ -848,6 +1041,7 @@ WlSessionLockSurface {
                                         required property string body
                                         required property string appName
                                         required property string time
+
                                         width: ListView.view ? ListView.view.width : 100
                                         height: 50
                                         radius: 8
@@ -873,6 +1067,7 @@ WlSessionLockSurface {
                                                     font.pixelSize: 14
                                                     color: root.colors.accent
                                                 }
+
                                             }
 
                                             ColumnLayout {
@@ -897,6 +1092,7 @@ WlSessionLockSurface {
                                                     elide: Text.ElideRight
                                                     maximumLineCount: 1
                                                 }
+
                                             }
 
                                             Text {
@@ -905,45 +1101,154 @@ WlSessionLockSurface {
                                                 font.pixelSize: 8
                                                 Layout.alignment: Qt.AlignTop
                                             }
+
                                         }
+
                                     }
+
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
+            Behavior on opacity {
+                enabled: !Config.disableLockAnimation
+
+                NumberAnimation {
+                    duration: 400
+                    easing.type: Easing.OutCubic
+                }
+
+            }
+
+            Behavior on scale {
+                enabled: !Config.disableLockAnimation
+
+                NumberAnimation {
+                    duration: 400
+                    easing.type: Easing.OutCubic
+                }
+
+            }
+
         }
+
+        Behavior on width {
+            enabled: !Config.disableLockAnimation
+
+            NumberAnimation {
+                duration: 500
+                easing.type: Easing.OutBack
+                easing.overshoot: 1.02
+            }
+
+        }
+
+        Behavior on height {
+            enabled: !Config.disableLockAnimation
+
+            NumberAnimation {
+                duration: 500
+                easing.type: Easing.OutBack
+                easing.overshoot: 1.02
+            }
+
+        }
+
+        Behavior on radius {
+            enabled: !Config.disableLockAnimation
+
+            NumberAnimation {
+                duration: 400
+                easing.type: Easing.OutCubic
+            }
+
+        }
+
+        Behavior on border.width {
+            enabled: !Config.disableLockAnimation
+
+            NumberAnimation {
+                duration: 200
+            }
+
+        }
+
     }
 
     // INIT ANIMATION
     SequentialAnimation {
         id: initAnim
+
         running: !Config.disableLockAnimation
 
         // Phase 1: Background + overlay fade in
         ParallelAnimation {
-            NumberAnimation { target: bg; property: "opacity"; to: 1; duration: 400; easing.type: Easing.OutQuad }
-            NumberAnimation { target: overlay; property: "opacity"; to: 0.45; duration: 400; easing.type: Easing.OutQuad }
+            NumberAnimation {
+                target: bg
+                property: "opacity"
+                to: 1
+                duration: 400
+                easing.type: Easing.OutQuad
+            }
+
+            NumberAnimation {
+                target: overlay
+                property: "opacity"
+                to: 0.45
+                duration: 400
+                easing.type: Easing.OutQuad
+            }
+
         }
 
         // Phase 2: Lock box appears with scale + rotation
         ParallelAnimation {
-            NumberAnimation { target: morphContainer; property: "scale"; from: 0; to: 1; duration: 450; easing.type: Easing.OutBack; easing.overshoot: 1.3 }
-            NumberAnimation { target: morphContainer; property: "rotation"; from: -180; to: 0; duration: 450; easing.type: Easing.OutBack }
+            NumberAnimation {
+                target: morphContainer
+                property: "scale"
+                from: 0
+                to: 1
+                duration: 450
+                easing.type: Easing.OutBack
+                easing.overshoot: 1.3
+            }
+
+            NumberAnimation {
+                target: morphContainer
+                property: "rotation"
+                from: -180
+                to: 0
+                duration: 450
+                easing.type: Easing.OutBack
+            }
+
         }
 
         // Brief pause
-        PauseAnimation { duration: 250 }
+        PauseAnimation {
+            duration: 250
+        }
 
         // Phase 3: Expand to bento grid
-        ScriptAction { script: root.expanded = true }
+        ScriptAction {
+            script: root.expanded = true
+        }
+
     }
 
     // Reusable components
     component BentoCard: Rectangle {
         property color cardColor: "transparent"
         property color borderColor: "gray"
+
         color: Qt.rgba(cardColor.r, cardColor.g, cardColor.b, 0.45)
         radius: 16
         border.width: 1
@@ -961,19 +1266,45 @@ WlSessionLockSurface {
         Canvas {
             anchors.fill: parent
             onPaint: {
-                var ctx = getContext("2d"); ctx.reset()
-                var cx = width / 2, cy = height / 2, r = 18, lw = 4
-                ctx.beginPath(); ctx.arc(cx, cy, r, 0, 2 * Math.PI); ctx.strokeStyle = Qt.rgba(bgColor.r, bgColor.g, bgColor.b, 0.2); ctx.lineWidth = lw; ctx.stroke()
-                ctx.beginPath(); ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * progress)); ctx.strokeStyle = ringColor; ctx.lineCap = "round"; ctx.lineWidth = lw; ctx.stroke()
+                var ctx = getContext("2d");
+                ctx.reset();
+                var cx = width / 2, cy = height / 2, r = 18, lw = 4;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+                ctx.strokeStyle = Qt.rgba(bgColor.r, bgColor.g, bgColor.b, 0.2);
+                ctx.lineWidth = lw;
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, -Math.PI / 2, -Math.PI / 2 + (2 * Math.PI * progress));
+                ctx.strokeStyle = ringColor;
+                ctx.lineCap = "round";
+                ctx.lineWidth = lw;
+                ctx.stroke();
             }
             Component.onCompleted: requestPaint()
         }
 
         ColumnLayout {
-            anchors.centerIn: parent; spacing: 0
-            Text { text: Math.round(progress * 100) + "%"; color: textColor; font.pixelSize: 9; font.bold: true; Layout.alignment: Qt.AlignHCenter }
-            Text { text: label; color: mutedColor; font.pixelSize: 7; Layout.alignment: Qt.AlignHCenter }
+            anchors.centerIn: parent
+            spacing: 0
+
+            Text {
+                text: Math.round(progress * 100) + "%"
+                color: textColor
+                font.pixelSize: 9
+                font.bold: true
+                Layout.alignment: Qt.AlignHCenter
+            }
+
+            Text {
+                text: label
+                color: mutedColor
+                font.pixelSize: 7
+                Layout.alignment: Qt.AlignHCenter
+            }
+
         }
+
     }
 
     // Binary column for BCD clock
@@ -1001,9 +1332,16 @@ WlSessionLockSurface {
                 color: isActive ? activeColor : (activeColor ? Qt.rgba(activeColor.r, activeColor.g, activeColor.b, 0.2) : "transparent")
 
                 Behavior on color {
-                    ColorAnimation { duration: 200 }
+                    ColorAnimation {
+                        duration: 200
+                    }
+
                 }
+
             }
+
         }
+
     }
+
 }

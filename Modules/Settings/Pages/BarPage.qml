@@ -3,13 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Core
-import qs.Widgets
 import qs.Services
+import qs.Widgets
 
 ColumnLayout {
-    spacing: 16
     property var context
     property var colors: context.colors
+
+    spacing: 16
 
     Text {
         text: "Bar"
@@ -26,9 +27,11 @@ ColumnLayout {
         icon: "󰖲"
         active: Config.floatingBar
         theme: colors
-        
         onActiveChanged: {
-            if (Config.floatingBar !== active) Config.floatingBar = active
+            if (Config.floatingBar !== active)
+                Config.floatingBar = active;
+
         }
     }
+
 }

@@ -6,6 +6,8 @@ import qs.Core
 import qs.Services
 
 Item {
+    // Logger.d("Wallpaper", "Transition complete!");
+
     id: root
 
     property string source: ""
@@ -14,8 +16,6 @@ Item {
     property string screenName: screen ? screen.name : ""
 
     function applyTransition(newImage, oldImage) {
-        // Logger.d("Wallpaper", "Transition complete!");
-
         // Logger.d("Wallpaper", "Starting transition type", transitionType);
         var w = root.width;
         var h = root.height;
@@ -204,9 +204,10 @@ Item {
     anchors.fill: parent
     Component.onCompleted: {
         if (WallpaperService.isInitialized) {
+            // Logger.d("Wallpaper", "Loading wallpaper for", screenName, ":", wallpaper);
+
             var wallpaper = WallpaperService.getWallpaper(screenName);
             if (wallpaper && wallpaper !== "")
-                // Logger.d("Wallpaper", "Loading wallpaper for", screenName, ":", wallpaper);
                 root.source = "file://" + wallpaper;
 
         }
@@ -320,12 +321,13 @@ Item {
             smooth: true
             opacity: (root.currentImage === img1) ? 1 : 0
             onStatusChanged: {
+                // Logger.d("Wallpaper", "img1 ready, will apply transition type:", root.transitionType);
+
                 // Logger.d("Wallpaper", "img1 status:", status === Image.Ready ? "Ready" : status === Image.Loading ? "Loading" : "Error");
                 if (status === Image.Ready && root.currentImage !== img1 && source == root.source)
-                    // Logger.d("Wallpaper", "img1 ready, will apply transition type:", root.transitionType);
                     Qt.callLater(function() {
-                        applyTransition(img1, img2);
-                    });
+                    applyTransition(img1, img2);
+                });
 
             }
 
@@ -388,12 +390,13 @@ Item {
             smooth: true
             opacity: (root.currentImage === img2) ? 1 : 0
             onStatusChanged: {
+                // Logger.d("Wallpaper", "img2 ready, will apply transition type:", root.transitionType);
+
                 // Logger.d("Wallpaper", "img2 status:", status === Image.Ready ? "Ready" : status === Image.Loading ? "Loading" : "Error");
                 if (status === Image.Ready && root.currentImage !== img2 && source == root.source)
-                    // Logger.d("Wallpaper", "img2 ready, will apply transition type:", root.transitionType);
                     Qt.callLater(function() {
-                        applyTransition(img2, img1);
-                    });
+                    applyTransition(img2, img1);
+                });
 
             }
 

@@ -3,13 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Core
-import qs.Widgets
 import qs.Services
+import qs.Widgets
 
 ColumnLayout {
-    spacing: 16
     property var context
     property var colors: context.colors
+
+    spacing: 16
 
     Text {
         text: "Background"
@@ -33,11 +34,13 @@ ColumnLayout {
             color: colors.fg
             background: null
             horizontalAlignment: TextInput.AlignRight
-            
             onEditingFinished: {
-                if (text !== "") Config.wallpaperDirectory = text
+                if (text !== "")
+                    Config.wallpaperDirectory = text;
+
             }
         }
-    }
-}
 
+    }
+
+}

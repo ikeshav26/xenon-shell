@@ -3,14 +3,14 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs.Core
-import qs.Widgets
 import qs.Services
+import qs.Widgets
 
 ColumnLayout {
-    spacing: 16
     property var context // Injected context
-
     property var colors: context.colors
+
+    spacing: 16
 
     Text {
         text: "General"
@@ -34,18 +34,21 @@ ColumnLayout {
             font.pixelSize: 14
             color: colors.fg
             horizontalAlignment: TextInput.AlignRight
-            
+            onEditingFinished: {
+                if (text !== "")
+                    Config.fontFamily = text;
+
+            }
+
             background: Rectangle {
-                color: parent.activeFocus ? Qt.rgba(0,0,0,0.2) : "transparent"
+                color: parent.activeFocus ? Qt.rgba(0, 0, 0, 0.2) : "transparent"
                 radius: 6
                 border.width: parent.activeFocus ? 1 : 0
                 border.color: colors.accent
             }
-            
-            onEditingFinished: {
-                if (text !== "") Config.fontFamily = text
-            }
+
         }
+
     }
 
     // Font Size Control
@@ -57,7 +60,7 @@ ColumnLayout {
 
         RowLayout {
             spacing: 12
-            
+
             Text {
                 text: Config.fontSize + "px"
                 font.pixelSize: 14
@@ -65,43 +68,50 @@ ColumnLayout {
                 font.bold: true
             }
 
-            component Spincircle : Rectangle {
+            Spincircle {
+                symbol: "–"
+                onClicked: Config.fontSize = Math.max(10, Config.fontSize - 1)
+            }
+
+            Spincircle {
+                symbol: "+"
+                onClicked: Config.fontSize = Math.min(24, Config.fontSize + 1)
+            }
+
+            component Spincircle: Rectangle {
                 property string symbol
+
                 signal clicked()
-                
-                width: 32; height: 32
+
+                width: 32
+                height: 32
                 radius: 16
                 color: hover.containsMouse ? colors.tile : "transparent"
                 border.width: 1
                 border.color: colors.border
-                
+
                 Text {
                     anchors.centerIn: parent
                     text: symbol
                     color: colors.fg
                     font.pixelSize: 16
                 }
-                
+
                 TapHandler {
                     onTapped: clicked()
                     cursorShape: Qt.PointingHandCursor
                 }
-                
+
                 HoverHandler {
                     id: hover
+
                     cursorShape: Qt.PointingHandCursor
                 }
+
             }
-            
-            Spincircle {
-                symbol: "–"
-                onClicked: Config.fontSize = Math.max(10, Config.fontSize - 1)
-            }
-            
-            Spincircle {
-                symbol: "+"
-                onClicked: Config.fontSize = Math.min(24, Config.fontSize + 1)
-            }
+
         }
+
     }
+
 }

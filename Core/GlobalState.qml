@@ -21,13 +21,13 @@ QtObject {
             launcherOpen = true;
         }
     }
-    
+
     function toggleSettings() {
         if (settingsOpen) {
-           settingsOpen = false;
+            settingsOpen = false;
         } else {
-           closeAll();
-           settingsOpen = true;
+            closeAll();
+            settingsOpen = true;
         }
     }
 
