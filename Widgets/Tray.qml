@@ -97,11 +97,18 @@ RowLayout {
                         modelData.secondaryActivate()
                     } else if (mouse.button === Qt.RightButton) {
                         if (modelData.hasMenu && modelData.menu) {
-                            modelData.menu.open()
+                            var pos = itemMouseArea.mapToGlobal(0, itemMouseArea.height);
+                            contextMenu.open(modelData.menu, pos.x, pos.y + 4); 
                         }
                     }
                 }
             }
         }
+    }
+
+    TrayContextMenu {
+        id: contextMenu
+        Layout.preferredWidth: 0
+        Layout.preferredHeight: 0
     }
 }

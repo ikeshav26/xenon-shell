@@ -38,12 +38,7 @@ Variants {
             fontFamily: root.context.config.fontFamily
             fontSize: root.context.config.fontSize
             kernelVersion: root.context.os.version
-            cpuUsage: root.context.cpu.usage
-            memUsage: root.context.mem.usage
-            diskUsage: root.context.disk.usage
             volumeLevel: root.context.volume.level
-            activeWindow: root.context.activeWindow.title
-            currentLayout: root.context.layout.layout
             time: root.context.time.currentTime
             volumeService: root.context.volume
             networkService: root.context.network

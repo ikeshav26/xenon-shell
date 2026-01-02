@@ -17,12 +17,7 @@ Rectangle {
     required property string fontFamily
     required property int fontSize
     required property string kernelVersion
-    required property int cpuUsage
-    required property int memUsage
-    required property int diskUsage
     required property int volumeLevel
-    required property string activeWindow
-    required property string currentLayout
     required property string time
     property bool floating: true
     
@@ -159,18 +154,6 @@ Rectangle {
 
         VerticalDivider { }
 
-        // 3. Keyboard Layout
-        Text {
-            text: currentLayout
-            color: colors.fg
-            font.pixelSize: fontSize - 2
-            font.family: fontFamily
-            font.bold: true
-            opacity: 0.7
-        }
-
-        VerticalDivider { }
-
         // 4. Unique Music Widget (Spinning Vinyl)
         Rectangle {
             id: mediaWidget
@@ -296,23 +279,6 @@ Rectangle {
 
         Item { Layout.fillWidth: true }
 
-        // 5. Active Window Title
-        InfoPill {
-            visible: activeWindow !== ""
-            Layout.maximumWidth: 400
-            border.width: 0
-            color: Qt.rgba(0, 0, 0, 0.2)
-
-            Text {
-                text: activeWindow
-                color: colors.fg
-                font.pixelSize: fontSize - 1
-                font.family: fontFamily
-                font.bold: true
-                elide: Text.ElideMiddle
-                Layout.maximumWidth: 360
-            }
-        }
 
         Item { Layout.fillWidth: true }
 
@@ -403,60 +369,15 @@ Rectangle {
             visible: SystemTray.items.values.length > 0 
         }
 
-        // 6. System Stats
+
+        // 7. System Status
         InfoPill {
+            
+            // Network
             RowLayout {
+                visible: networkService
                 spacing: 6
-
-                Text {
-                    text: ""
-                    color: colors.blue
-                    font.family: "Symbols Nerd Font"
-                    font.pixelSize: fontSize + 2
-                    Layout.alignment: Qt.AlignBaseline
-                }
-
-                Text {
-                    id: tCpu
-                    text: cpuUsage + "%"
-                    color: colors.fg
-                    font.pixelSize: fontSize - 1
-                    font.family: fontFamily
-                    Layout.alignment: Qt.AlignBaseline
-                }
-            }
-
-            VerticalDivider { Layout.preferredHeight: 10 }
-
-            RowLayout {
-                spacing: 6
-
-                Text {
-                    text: ""
-                    color: colors.red
-                    font.family: "Symbols Nerd Font"
-                    font.pixelSize: fontSize + 2
-                    Layout.alignment: Qt.AlignBaseline
-                }
-
-                Text {
-                    id: tRam
-                    text: memUsage + "%"
-                    color: colors.fg
-                    font.pixelSize: fontSize - 1
-                    font.family: fontFamily
-                    Layout.alignment: Qt.AlignBaseline
-                }
-            }
-        }
-
-        // 7. Network
-        InfoPill {
-            visible: networkService
-
-            RowLayout {
-                spacing: 6
-
+                
                 Text {
                     text: networkService.wifiEnabled ? "󰖩" : "󰖪"
                     color: networkService.wifiEnabled ? colors.purple : colors.muted
@@ -476,66 +397,69 @@ Rectangle {
                     elide: Text.ElideRight
                     Layout.alignment: Qt.AlignBaseline
                 }
+
+                TapHandler {
+                    onTapped: globalState.requestSidePanelMenu("wifi")
+                }
+                HoverHandler {
+                    cursorShape: Qt.PointingHandCursor
+                }
             }
 
-            TapHandler {
-                onTapped: globalState.requestSidePanelMenu("wifi")
+            VerticalDivider { visible: networkService; Layout.preferredHeight: 12 }
+
+            // Volume
+            Item {
+                Layout.preferredHeight: volumeLayout.implicitHeight
+                Layout.preferredWidth: volumeLayout.implicitWidth
+                
+                RowLayout {
+                    id: volumeLayout
+                    anchors.centerIn: parent
+                    spacing: 6
+
+                    Text {
+                        text: volumeService ? volumeService.icon : "󰕾"
+                        color: colors.yellow
+                        font.family: "Symbols Nerd Font"
+                        font.pixelSize: fontSize + 2
+                        Layout.alignment: Qt.AlignBaseline
+                        Behavior on text { enabled: false }
+                    }
+
+                    Text {
+                        id: tVol
+                        text: (volumeService && volumeService.muted) ? "MUT" : (volumeLevel + "%")
+                        color: (volumeService && volumeService.muted) ? colors.red : colors.fg
+                        font.pixelSize: fontSize - 1
+                        font.family: fontFamily
+                        font.bold: true
+                        Layout.alignment: Qt.AlignBaseline
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    acceptedButtons: Qt.LeftButton
+
+                    onClicked: {
+                        if (volumeService) volumeService.toggleMute();
+                    }
+
+                    onWheel: (wheel) => {
+                        if (!volumeService) return;
+                        if (wheel.angleDelta.y > 0) volumeService.increaseVolume();
+                        else volumeService.decreaseVolume();
+                    }
+                }
             }
 
-            HoverHandler {
-                cursorShape: Qt.PointingHandCursor
-            }
-        }
+            VerticalDivider { visible: batteryReady; Layout.preferredHeight: 12 }
 
-        // 8. Volume
-        InfoPill {
+            // Battery
             RowLayout {
-                spacing: 6
-
-                Text {
-                    text: volumeService ? volumeService.icon : "󰕾"
-                    color: colors.yellow
-                    font.family: "Symbols Nerd Font"
-                    font.pixelSize: fontSize + 2
-                    Layout.alignment: Qt.AlignBaseline
-                    Behavior on text { enabled: false }
-                }
-
-                Text {
-                    id: tVol
-                    text: (volumeService && volumeService.muted) ? "MUT" : (volumeLevel + "%")
-                    color: (volumeService && volumeService.muted) ? colors.red : colors.fg
-                    font.pixelSize: fontSize - 1
-                    font.family: fontFamily
-                    font.bold: true
-                    Layout.alignment: Qt.AlignBaseline
-                }
-            }
-
-            TapHandler {
-                onTapped: {
-                    if (volumeService) volumeService.toggleMute();
-                }
-            }
-
-            HoverHandler {
-                cursorShape: Qt.PointingHandCursor
-            }
-
-            WheelHandler {
-                onWheel: (wheel) => {
-                    if (!volumeService) return;
-                    if (wheel.angleDelta.y > 0) volumeService.increaseVolume();
-                    else volumeService.decreaseVolume();
-                }
-            }
-        }
-
-        // 9. Battery
-        InfoPill {
-            visible: batteryReady
-
-            RowLayout {
+                visible: batteryReady
                 spacing: 6
 
                 Text {
@@ -554,46 +478,15 @@ Rectangle {
                     font.bold: true
                     Layout.alignment: Qt.AlignBaseline
                 }
-            }
-
-            TapHandler {
-                onTapped: {
-                    console.log("Battery: " + Math.round(batteryPercent) + "% - " + 
-                               (batteryCharging ? "Charging" : batteryFull ? "Full" : "Discharging"))
-                    if (battery.timeToEmpty > 0) {
-                        console.log("Time to empty: " + BatteryService.formatTime(battery.timeToEmpty))
-                    }
-                    if (battery.timeToFull > 0) {
-                        console.log("Time to full: " + BatteryService.formatTime(battery.timeToFull))
+                
+                TapHandler {
+                    onTapped: {
+                        console.log("Battery: " + Math.round(batteryPercent) + "%")
                     }
                 }
             }
         }
 
-        // 10. Clock
-        Rectangle {
-            Layout.preferredHeight: 26
-            Layout.preferredWidth: clockText.implicitWidth + 24
-            radius: height / 2
-            color: colors.accent
-
-            Text {
-                id: clockText
-                anchors.centerIn: parent
-                text: time
-                color: colors.bg
-                font.pixelSize: fontSize - 1
-                font.family: fontFamily
-                font.bold: true
-            }
-
-            MouseArea {
-                anchors.fill: parent
-                onClicked: globalState.toggleSettings()
-                cursorShape: Qt.PointingHandCursor
-                hoverEnabled: true
-            }
-        }
 
         // 11. Power Menu
         Rectangle {
@@ -625,6 +518,32 @@ Rectangle {
                 onExited: parent.color = "transparent"
                 onClicked: powerMenuIpcProcess.running = true
             }
+        }
+    }
+
+    // 10. Clock (Centered)
+    Rectangle {
+        anchors.centerIn: parent
+        height: 26
+        width: clockText.implicitWidth + 24
+        radius: height / 2
+        color: colors.accent
+        
+        Text {
+            id: clockText
+            anchors.centerIn: parent
+            text: time
+            color: colors.bg
+            font.pixelSize: fontSize - 1
+            font.family: fontFamily
+            font.bold: true
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: globalState.toggleSettings()
+            cursorShape: Qt.PointingHandCursor
+            hoverEnabled: true
         }
     }
 
