@@ -132,7 +132,65 @@ PanelWindow {
         border.width: 1
         border.color: appColors.border
         clip: true
+        // Block clicks from propagating to background MouseArea
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true // Allow hover, but consume clicks
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: mouse.accepted = true
+        }
+
         layer.enabled: root.isOpen || root.forcedOpen || root.height > 0
+
+        // Ambxst-style elastic highlight
+        Rectangle {
+            id: navHighlight
+            width: 36
+            radius: 18
+            color: appColors.accent
+            
+            // Centered horizontally in navBox
+            x: (parent.width - width) / 2
+            
+            // Vertical position relative to navBox top
+            // navColumn is centered vertically.
+            // navColumn.y is the top of the column relative to navBox.
+            // We add the calculated Y offset.
+            y: navColumn.y + Math.min(animatedY1, animatedY2)
+            
+            // Height stretches during movement
+            height: Math.abs(animatedY2 - animatedY1) + width
+
+            property int idx1: root.currentTab
+            property int idx2: root.currentTab
+
+            function getYForIndex(idx) {
+                // Item height 36 + spacing 16 = 52
+                return idx * 52
+            }
+
+            property real targetY1: getYForIndex(idx1)
+            property real targetY2: getYForIndex(idx2)
+
+            property real animatedY1: targetY1
+            property real animatedY2: targetY2
+
+            Behavior on animatedY1 {
+                NumberAnimation {
+                    duration: 400 / 3 
+                    easing.type: Easing.OutSine
+                }
+            }
+            Behavior on animatedY2 {
+                NumberAnimation {
+                    duration: 400
+                    easing.type: Easing.OutSine
+                }
+            }
+
+            onTargetY1Changed: animatedY1 = targetY1
+            onTargetY2Changed: animatedY2 = targetY2
+        }
 
         ColumnLayout {
             id: navColumn
@@ -160,7 +218,7 @@ PanelWindow {
                     Layout.preferredWidth: 36
                     Layout.preferredHeight: 36
                     radius: 18
-                    color: root.currentTab === modelData.index ? appColors.accent : "transparent"
+                    color: "transparent" // Highlight is handled by navHighlight
 
                     Text {
                         anchors.centerIn: parent
@@ -177,11 +235,7 @@ PanelWindow {
                         onClicked: root.currentTab = modelData.index
                     }
 
-                    Behavior on color {
-                        ColorAnimation {
-                            duration: 200
-                        }
-                    }
+                // Removed color behavior as it's now transparent
                 }
             }
         }
@@ -233,6 +287,14 @@ PanelWindow {
         border.width: 1
         border.color: appColors.border
         clip: true
+        // Block clicks from propagating to background MouseArea
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true // Allow hover, but consume clicks
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: mouse.accepted = true
+        }
+        
         layer.enabled: root.isOpen || root.forcedOpen || root.height > 0
 
         Loader {
