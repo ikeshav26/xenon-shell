@@ -12,20 +12,22 @@ Variants {
 
     PanelWindow {
         property var modelData
+        property string position: root.context.config.barPosition || "top"
 
         screen: modelData
         implicitHeight: 34
         color: "transparent"
 
         anchors {
-            top: true
+            top: position === "top"
+            bottom: position === "bottom"
             left: true
             right: true
         }
 
         margins {
-            top: root.context.config.floatingBar ? 5 : 0
-            bottom: 0
+            top: (position === "top" && root.context.config.floatingBar) ? 5 : 0
+            bottom: (position === "bottom" && root.context.config.floatingBar) ? 5 : 0
             left: root.context.config.floatingBar ? 8 : 0
             right: root.context.config.floatingBar ? 8 : 0
         }

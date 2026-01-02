@@ -75,6 +75,7 @@ WlSessionLockSurface {
 
         }
 
+
         // Wallpaper Background (Custom)
         Image {
             anchors.fill: parent
