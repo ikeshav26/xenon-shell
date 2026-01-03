@@ -20,7 +20,6 @@ ColumnLayout {
         color: colors.fg
     }
 
-    // Font Family Input
     SettingItem {
         label: "Font Family"
         sublabel: "Global font family"
@@ -51,7 +50,6 @@ ColumnLayout {
 
     }
 
-    // Font Size Control
     SettingItem {
         label: "Font Size"
         sublabel: "Global font size"

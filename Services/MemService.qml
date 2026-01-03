@@ -3,32 +3,18 @@ import Quickshell.Io
 import qs.Core
 
 Item {
-    // Expose total and used (bytes) plus usage percent
     property real total: 0
     property real used: 0
     property int usage: 0
-    // Temporary storage for output
     property string outputBuffer: ""
 
     Process {
-        // onExited: (code) => {
-        //     console.log("[MemService] Process exited with code:", code);
-        // }
-        // onStarted: {
-        //     console.log("[MemService] Process started");
-        // }
-
         id: memProc
 
-        // Use free with bytes and parse Mem line
         command: ["sh", "-c", "free -b | grep '^Mem:' | awk '{print $2, $3}'"]
 
-        // Capture stdout as it comes in
         stdout: SplitParser {
             onRead: (data) => {
-                // Logger.d("MemService", "No data received");
-                // Logger.d("MemService", "Empty output after trim");
-
                 if (!data)
                     return ;
 
@@ -36,7 +22,6 @@ Item {
                 if (output === "")
                     return ;
 
-                // Split by whitespace
                 var parts = output.split(/\s+/);
                 if (parts.length < 2) {
                     Logger.w("MemService", "Not enough parts");
@@ -48,7 +33,6 @@ Item {
                     Logger.e("MemService", "Invalid values");
                     return ;
                 }
-                // Update properties
                 total = totalBytes;
                 used = usedBytes;
                 usage = Math.round((usedBytes / totalBytes) * 100);

@@ -1,10 +1,10 @@
 import Quickshell
 import qs.Modules.Background
 import qs.Modules.Bar
+import qs.Modules.Corners
 import qs.Modules.Lock
 import qs.Modules.Overlays
 import qs.Modules.Settings
-import qs.Modules.Corners
 import qs.Services
 
 ShellRoot {

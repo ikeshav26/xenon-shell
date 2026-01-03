@@ -10,7 +10,6 @@ Item {
 
     required property var theme
 
-    // Helper to format time
     function formatTime(seconds) {
         let m = Math.floor(seconds / 60);
         let s = Math.floor(seconds % 60);
@@ -32,7 +31,6 @@ Item {
         border.color: theme.border
         layer.enabled: true
 
-        // 1. Filled Album Art
         Image {
             id: albumArt
 
@@ -42,7 +40,6 @@ Item {
             visible: status === Image.Ready
         }
 
-        // 2. Dark Overlay for readability
         LinearGradient {
             anchors.fill: parent
             start: Qt.point(0, 0)
@@ -68,7 +65,6 @@ Item {
 
         }
 
-        // 3. Cava Visualizer (Background-ish but on top of image)
         Item {
             property var cavaValues: CavaService.values
 
@@ -79,7 +75,6 @@ Item {
             height: parent.height * 0.5 // Cover bottom half
             z: 0
 
-            // Only run if music is playing
             Binding {
                 target: CavaService
                 property: "running"
@@ -122,7 +117,6 @@ Item {
 
         }
 
-        // 4. Content (Text + Controls)
         ColumnLayout {
             id: contentColumn
 
@@ -134,7 +128,6 @@ Item {
             anchors.margins: 24
             spacing: 16
 
-            // Track Info
             ColumnLayout {
                 Layout.fillWidth: true
                 spacing: 4
@@ -160,12 +153,10 @@ Item {
 
             }
 
-            // Controls Row
             RowLayout {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 32
 
-                // Previous
                 Item {
                     width: 32
                     height: 32
@@ -190,7 +181,6 @@ Item {
 
                 }
 
-                // Play/Pause (Feature Button)
                 Rectangle {
                     width: 64
                     height: 64
@@ -209,7 +199,6 @@ Item {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
                         onClicked: MprisService.playPause()
-                        // Simple shrink effect
                         onPressed: parent.scale = 0.95
                         onReleased: parent.scale = 1
                     }
@@ -223,7 +212,6 @@ Item {
 
                 }
 
-                // Next
                 Item {
                     width: 32
                     height: 32
@@ -250,7 +238,6 @@ Item {
 
             }
 
-            // Progress Bar
             RowLayout {
                 Layout.fillWidth: true
                 Layout.maximumWidth: parent.width * 0.9
@@ -264,30 +251,28 @@ Item {
                     font.family: "JetBrainsMono Nerd Font"
                 }
 
-                // Custom Progress Bar with MouseArea
                 Item {
                     id: progressContainer
-                    
+
                     property bool seeking: false
                     property real seekValue: 0
-                    
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 24
-                    
+                    property bool seekingCooldown: false
+
                     function seekTo(mouseX) {
                         var pos = Math.max(0, Math.min(mouseX / width, 1));
                         seekValue = pos * MprisService.length;
                     }
-                    
-                    // Track background
+
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 24
+
                     Rectangle {
                         anchors.centerIn: parent
                         width: parent.width
                         height: 6
                         radius: 3
                         color: "#40ffffff"
-                        
-                        // Progress fill
+
                         Rectangle {
                             width: {
                                 var len = MprisService.length > 0 ? MprisService.length : 1;
@@ -298,12 +283,12 @@ Item {
                             radius: 3
                             color: theme.accent
                         }
+
                     }
-                    
-                    // Draggable handle
+
                     Rectangle {
                         id: progressHandle
-                        
+
                         x: {
                             var len = MprisService.length > 0 ? MprisService.length : 1;
                             var pos = (progressContainer.seeking || progressContainer.seekingCooldown) ? progressContainer.seekValue : MprisService.position;
@@ -315,12 +300,10 @@ Item {
                         radius: 6
                         color: theme.accent
                     }
-                    
-                    property bool seekingCooldown: false
 
-                    // Timer to keep showing the sought position until the player catches up
                     Timer {
                         id: seekCooldownTimer
+
                         interval: 1000 // 1 second grace period for player to update
                         repeat: false
                         onTriggered: {
@@ -328,7 +311,6 @@ Item {
                         }
                     }
 
-                    // Keep seekValue correctly synced when not seeking AND not in cooldown
                     Binding {
                         target: progressContainer
                         property: "seekValue"
@@ -336,37 +318,30 @@ Item {
                         when: !progressContainer.seeking && !progressContainer.seekingCooldown
                     }
 
-                    // Mouse interaction
                     MouseArea {
                         anchors.fill: parent
                         cursorShape: Qt.PointingHandCursor
-                        
                         onPressed: (mouse) => {
-                            // Cancel any active cooldown
                             seekCooldownTimer.stop();
                             progressContainer.seekingCooldown = false;
-                            
-                            // Update UI immediately
                             progressContainer.seekTo(mouse.x);
                             progressContainer.seeking = true;
                         }
-                        
                         onPositionChanged: (mouse) => {
-                            if (progressContainer.seeking) {
+                            if (progressContainer.seeking)
                                 progressContainer.seekTo(mouse.x);
-                            }
+
                         }
-                        
                         onReleased: {
                             if (progressContainer.seeking) {
                                 MprisService.setPosition(progressContainer.seekValue);
-                                // Enter cooldown mode to prevent jumping back
                                 progressContainer.seeking = false;
                                 progressContainer.seekingCooldown = true;
                                 seekCooldownTimer.restart();
                             }
                         }
                     }
+
                 }
 
                 Text {

@@ -20,7 +20,6 @@ ColumnLayout {
         color: colors.fg
     }
 
-    // Wallpaper Directory
     SettingItem {
         label: "Wallpaper Directory"
         sublabel: "Path to wallpaper folder"

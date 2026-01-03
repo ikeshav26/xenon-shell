@@ -4,9 +4,9 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Notifications
 import Quickshell.Wayland
+import "Views"
 import qs.Core
 import qs.Services
-import "Views"
 
 WlSessionLockSurface {
     id: root
@@ -14,10 +14,14 @@ WlSessionLockSurface {
     required property var lock
     required property var pam
     required property var colors
+    readonly property bool musicModeActive: Config.lockScreenMusicMode && (MprisService.artUrl !== "" || MprisService.title !== "")
 
     color: "transparent"
-    
-    readonly property bool musicModeActive: Config.lockScreenMusicMode && (MprisService.artUrl !== "" || MprisService.title !== "")
+    onMusicModeActiveChanged: focusTimer.restart()
+    Component.onCompleted: {
+        console.log("LockScreen: Controller Loaded. MusicMode=" + musicModeActive);
+        focusTimer.restart();
+    }
 
     ListModel {
         id: notifications
@@ -42,43 +46,36 @@ WlSessionLockSurface {
 
     LockScreenDefault {
         id: defaultView
+
         anchors.fill: parent
-        
         visible: !musicModeActive
         enabled: visible
-        
         colors: root.colors
         pam: root.pam
         notifications: notifications
     }
-    
+
     LockScreenMusic {
         id: musicView
+
         anchors.fill: parent
-        
         visible: musicModeActive
         enabled: visible
-        
         colors: root.colors
         pam: root.pam
     }
-    
+
     Timer {
         id: focusTimer
+
         interval: 100
         repeat: false
         onTriggered: {
-            if (musicModeActive) {
-                musicView.inputField.forceActiveFocus()
-            } else {
-                defaultView.inputField.forceActiveFocus()
-            }
+            if (musicModeActive)
+                musicView.inputField.forceActiveFocus();
+            else
+                defaultView.inputField.forceActiveFocus();
         }
     }
-    
-    onMusicModeActiveChanged: focusTimer.restart()
-    Component.onCompleted: {
-        console.log("LockScreen: Controller Loaded. MusicMode=" + musicModeActive);
-        focusTimer.restart();
-    }
+
 }

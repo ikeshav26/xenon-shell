@@ -34,22 +34,20 @@ ColumnLayout {
             radius: 14
             color: "transparent"
             clip: true
+            visible: true
 
             Image {
                 anchors.fill: parent
                 source: "file://" + Quickshell.env("HOME") + "/.face"
                 fillMode: Image.PreserveAspectCrop
-                
-                // Fallback if .face doesn't exist or fails to load
                 onStatusChanged: {
-                    if (status === Image.Error) {
-                        source = "../../Assets/arch.svg" // Or keep text based fallback
-                    }
+                    if (status === Image.Error)
+                        source = "../../Assets/arch.svg";
+ // Or keep text based fallback
                 }
             }
-            
-            // Fallback Text if image fails (and we don't want to use the arch svg as fallback or if that fails too)
-             Text {
+
+            Text {
                 anchors.centerIn: parent
                 text: "󰣇"
                 font.pixelSize: 24
@@ -68,9 +66,9 @@ ColumnLayout {
                     position: 1
                     color: theme.accentActive
                 }
+
             }
-            // Only show gradient if image is not ready
-            visible: true
+
         }
 
         ColumnLayout {
@@ -93,7 +91,6 @@ ColumnLayout {
 
         }
 
-        // Settings Button
         Rectangle {
             Layout.preferredWidth: 36
             Layout.preferredHeight: 36
@@ -112,11 +109,12 @@ ColumnLayout {
 
             TapHandler {
                 id: settingsBtn
+
                 onTapped: globalState.toggleSettings()
             }
+
         }
 
-        // Power Button
         Rectangle {
             Layout.preferredWidth: 36
             Layout.preferredHeight: 36

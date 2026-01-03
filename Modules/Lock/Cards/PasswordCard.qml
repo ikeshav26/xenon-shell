@@ -1,15 +1,14 @@
+import "../Components"
 import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import "../Components"
 
 BentoCard {
     id: root
 
     required property var colors
     required property var pam
-
     property alias inputField: inputField
 
     cardColor: colors.surface
@@ -42,12 +41,15 @@ BentoCard {
                     layer.enabled: status === Image.Ready
 
                     layer.effect: OpacityMask {
+
                         maskSource: Rectangle {
                             width: avatarImg.width
                             height: avatarImg.height
                             radius: width / 2
                         }
+
                     }
+
                 }
 
                 Text {
@@ -58,6 +60,7 @@ BentoCard {
                     color: root.colors.muted
                     visible: avatarImg.status !== Image.Ready
                 }
+
             }
 
             Text {
@@ -66,6 +69,7 @@ BentoCard {
                 font.pixelSize: 13
                 font.bold: true
             }
+
         }
 
         Rectangle {
@@ -134,6 +138,7 @@ BentoCard {
                         to: 0
                         duration: 40
                     }
+
                 }
 
                 Connections {
@@ -159,15 +164,18 @@ BentoCard {
 
                     interval: 2000
                     onTriggered: {
-                        inputField.color = root.colors.fg
-                        errorLabel.visible = false
+                        inputField.color = root.colors.fg;
+                        errorLabel.visible = false;
                     }
                 }
+
             }
+
         }
-        
+
         Text {
             id: errorLabel
+
             text: "Incorrect Password"
             color: root.colors.urgent
             font.pixelSize: 12
@@ -175,7 +183,16 @@ BentoCard {
             Layout.alignment: Qt.AlignHCenter
             visible: false
             opacity: visible ? 1 : 0
-            Behavior on opacity { NumberAnimation { duration: 200 } }
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 200
+                }
+
+            }
+
         }
+
     }
+
 }

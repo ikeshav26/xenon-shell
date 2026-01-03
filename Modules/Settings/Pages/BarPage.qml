@@ -42,18 +42,26 @@ ColumnLayout {
 
         ComboBox {
             id: positionCombo
+
             Layout.preferredWidth: 150
             model: ["Top", "Bottom"]
             currentIndex: {
                 var pos = Config.barPosition.toLowerCase();
-                if (pos === "top") return 0;
-                if (pos === "bottom") return 1;
+                if (pos === "top")
+                    return 0;
+
+                if (pos === "bottom")
+                    return 1;
+
                 return 0;
             }
-            
             font.family: Config.fontFamily
             font.pixelSize: 14
-            
+            onActivated: {
+                var positions = ["top", "bottom"];
+                Config.barPosition = positions[currentIndex];
+            }
+
             contentItem: Text {
                 leftPadding: 12
                 rightPadding: positionCombo.indicator.width + positionCombo.spacing
@@ -63,7 +71,7 @@ ColumnLayout {
                 verticalAlignment: Text.AlignVCenter
                 elide: Text.ElideRight
             }
-            
+
             background: Rectangle {
                 implicitWidth: 150
                 implicitHeight: 36
@@ -72,7 +80,7 @@ ColumnLayout {
                 border.width: positionCombo.activeFocus ? 2 : 1
                 radius: 8
             }
-            
+
             indicator: Text {
                 x: positionCombo.width - width - 12
                 y: positionCombo.topPadding + (positionCombo.availableHeight - height) / 2
@@ -81,34 +89,38 @@ ColumnLayout {
                 font.pixelSize: 16
                 color: colors.fg
             }
-            
+
             popup: Popup {
                 y: positionCombo.height + 4
                 width: positionCombo.width
                 implicitHeight: contentItem.implicitHeight
                 padding: 4
-                
+
                 contentItem: ListView {
                     clip: true
                     implicitHeight: contentHeight
                     model: positionCombo.popup.visible ? positionCombo.delegateModel : null
                     currentIndex: positionCombo.highlightedIndex
-                    
-                    ScrollIndicator.vertical: ScrollIndicator { }
+
+                    ScrollIndicator.vertical: ScrollIndicator {
+                    }
+
                 }
-                
+
                 background: Rectangle {
                     color: colors.surface
                     border.color: colors.border
                     border.width: 1
                     radius: 8
                 }
+
             }
-            
+
             delegate: ItemDelegate {
                 width: positionCombo.width - 8
                 implicitHeight: 36
-                
+                highlighted: positionCombo.highlightedIndex === index
+
                 contentItem: Text {
                     text: modelData
                     font: positionCombo.font
@@ -117,19 +129,16 @@ ColumnLayout {
                     verticalAlignment: Text.AlignVCenter
                     leftPadding: 12
                 }
-                
+
                 background: Rectangle {
                     color: parent.highlighted ? colors.tile : "transparent"
                     radius: 6
                 }
-                
-                highlighted: positionCombo.highlightedIndex === index
+
             }
-            
-            onActivated: {
-                var positions = ["top", "bottom"];
-                Config.barPosition = positions[currentIndex];
-            }
+
         }
+
     }
+
 }

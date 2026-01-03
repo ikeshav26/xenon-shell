@@ -161,12 +161,9 @@ PanelWindow {
     Connections {
         function onRequestSidePanelMenu(menu) {
             if (root.currentMenu === menu && root.controlOpen) {
-                // If the same menu is requested and panel is open, close it (toggle behavior)
                 toggleMenu(menu);
-                // This will close the menu
                 root.controlOpen = false;
             } else {
-                // Otherwise open/switch to it
                 if (root.currentMenu !== menu)
                     toggleMenu(menu);
 

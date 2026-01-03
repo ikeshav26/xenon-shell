@@ -39,6 +39,7 @@ PanelWindow {
     onVisibleChanged: {
         if (visible)
             eventHandler.forceActiveFocus();
+
     }
 
     anchors {
@@ -141,13 +142,11 @@ PanelWindow {
 
     }
 
-    // Transparent click-to-dismiss area (no dark overlay)
     MouseArea {
         anchors.fill: parent
         onClicked: globalState.powerMenuOpen = false
     }
 
-    // Centered floating panel
     Rectangle {
         id: panel
 
@@ -163,9 +162,9 @@ PanelWindow {
         scale: root.isOpen ? 1 : 0.9
         layer.enabled: root.isOpen
 
-        // Panel header
         Text {
             id: headerText
+
             x: 16
             y: 12
             text: "Power Menu"
@@ -175,7 +174,6 @@ PanelWindow {
             opacity: 0.6
         }
 
-        // Smooth-moving highlight
         Rectangle {
             id: highlight
 
@@ -196,12 +194,14 @@ PanelWindow {
                     easing.type: Easing.OutBack
                     easing.overshoot: 0.8
                 }
+
             }
+
         }
 
-        // Button items
         Column {
             id: buttonColumn
+
             x: 12
             y: headerHeight
             width: panel.width - 24
@@ -232,13 +232,16 @@ PanelWindow {
                                 ColorAnimation {
                                     duration: 150
                                 }
+
                             }
 
                             Behavior on opacity {
                                 NumberAnimation {
                                     duration: 150
                                 }
+
                             }
+
                         }
 
                         Text {
@@ -252,7 +255,9 @@ PanelWindow {
                                 ColorAnimation {
                                     duration: 150
                                 }
+
                             }
+
                         }
 
                         Item {
@@ -272,14 +277,18 @@ PanelWindow {
                                 ColorAnimation {
                                     duration: 150
                                 }
+
                             }
 
                             Behavior on opacity {
                                 NumberAnimation {
                                     duration: 150
                                 }
+
                             }
+
                         }
+
                     }
 
                     MouseArea {
@@ -289,8 +298,11 @@ PanelWindow {
                         onClicked: root.runCommand(model.command)
                         cursorShape: Qt.PointingHandCursor
                     }
+
                 }
+
             }
+
         }
 
         layer.effect: DropShadow {
@@ -305,6 +317,7 @@ PanelWindow {
                 duration: 250
                 easing.type: Easing.OutQuad
             }
+
         }
 
         Behavior on scale {
@@ -313,7 +326,9 @@ PanelWindow {
                 easing.type: Easing.OutBack
                 easing.overshoot: 0.8
             }
+
         }
+
     }
 
 }

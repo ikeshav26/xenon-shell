@@ -53,19 +53,71 @@ Singleton {
 
     }
     Component.onCompleted: Logger.debugEnabled = debug
-    onFontFamilyChanged: if (!_loading) saveTimer.restart()
-    onFontSizeChanged: if (!_loading) saveTimer.restart()
-    onWallpaperDirectoryChanged: if (!_loading) saveTimer.restart()
-    onDisableHoverChanged: if (!_loading) saveTimer.restart()
-    onFloatingBarChanged: if (!_loading) saveTimer.restart()
-    onBarPositionChanged: if (!_loading) saveTimer.restart()
-    onColorsChanged: if (!_loading) saveTimer.restart()
-    onOpenRgbDevicesChanged: if (!_loading) saveTimer.restart()
-    onDisableLockBlurChanged: if (!_loading) saveTimer.restart()
-    onDisableLockAnimationChanged: if (!_loading) saveTimer.restart()
-    onLockScreenCustomBackgroundChanged: if (!_loading) saveTimer.restart()
-    onLockScreenMusicModeChanged: if (!_loading) saveTimer.restart()
-    onLazyLoadLockScreenChanged: if (!_loading) saveTimer.restart()
+    onFontFamilyChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onFontSizeChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onWallpaperDirectoryChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onDisableHoverChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onFloatingBarChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onBarPositionChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onColorsChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onOpenRgbDevicesChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onDisableLockBlurChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onDisableLockAnimationChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onLockScreenCustomBackgroundChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onLockScreenMusicModeChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
+    onLazyLoadLockScreenChanged: {
+        if (!_loading)
+            saveTimer.restart();
+
+    }
 
     FileView {
         id: configFile
@@ -78,41 +130,47 @@ Singleton {
                 configFile.reload();
             }
         }
-
-        adapter: JsonAdapter {
-            id: configAdapter
-            property string fontFamily
-            property int fontSize
-            property string wallpaperDirectory
-            property bool disableHover
-            property bool floatingBar
-            property string barPosition
-            property var colors
-            property var openRgbDevices
-            property bool disableLockBlur
-            property bool disableLockAnimation
-            property bool lockScreenCustomBackground
-            property bool lockScreenMusicMode
-            property bool lazyLoadLockScreen
-            property bool debug
-        }
-
         onLoaded: {
             root._loading = true;
             try {
-                if (configAdapter.fontFamily) root.fontFamily = configAdapter.fontFamily;
-                if (configAdapter.fontSize) root.fontSize = configAdapter.fontSize;
-                if (configAdapter.wallpaperDirectory) root.wallpaperDirectory = configAdapter.wallpaperDirectory;
-                if (configAdapter.disableHover !== undefined) root.disableHover = configAdapter.disableHover;
-                if (configAdapter.floatingBar !== undefined) root.floatingBar = configAdapter.floatingBar;
-                if (configAdapter.barPosition) root.barPosition = configAdapter.barPosition;
-                if (configAdapter.colors) root.colors = configAdapter.colors;
-                if (configAdapter.disableLockBlur !== undefined) root.disableLockBlur = configAdapter.disableLockBlur;
-                if (configAdapter.disableLockAnimation !== undefined) root.disableLockAnimation = configAdapter.disableLockAnimation;
-                if (configAdapter.lockScreenCustomBackground !== undefined) root.lockScreenCustomBackground = configAdapter.lockScreenCustomBackground;
-                if (configAdapter.lockScreenMusicMode !== undefined) root.lockScreenMusicMode = configAdapter.lockScreenMusicMode;
-                if (configAdapter.lazyLoadLockScreen !== undefined) root.lazyLoadLockScreen = configAdapter.lazyLoadLockScreen;
-                if (configAdapter.debug !== undefined) root.debug = configAdapter.debug;
+                if (configAdapter.fontFamily)
+                    root.fontFamily = configAdapter.fontFamily;
+
+                if (configAdapter.fontSize)
+                    root.fontSize = configAdapter.fontSize;
+
+                if (configAdapter.wallpaperDirectory)
+                    root.wallpaperDirectory = configAdapter.wallpaperDirectory;
+
+                if (configAdapter.disableHover !== undefined)
+                    root.disableHover = configAdapter.disableHover;
+
+                if (configAdapter.floatingBar !== undefined)
+                    root.floatingBar = configAdapter.floatingBar;
+
+                if (configAdapter.barPosition)
+                    root.barPosition = configAdapter.barPosition;
+
+                if (configAdapter.colors)
+                    root.colors = configAdapter.colors;
+
+                if (configAdapter.disableLockBlur !== undefined)
+                    root.disableLockBlur = configAdapter.disableLockBlur;
+
+                if (configAdapter.disableLockAnimation !== undefined)
+                    root.disableLockAnimation = configAdapter.disableLockAnimation;
+
+                if (configAdapter.lockScreenCustomBackground !== undefined)
+                    root.lockScreenCustomBackground = configAdapter.lockScreenCustomBackground;
+
+                if (configAdapter.lockScreenMusicMode !== undefined)
+                    root.lockScreenMusicMode = configAdapter.lockScreenMusicMode;
+
+                if (configAdapter.lazyLoadLockScreen !== undefined)
+                    root.lazyLoadLockScreen = configAdapter.lazyLoadLockScreen;
+
+                if (configAdapter.debug !== undefined)
+                    root.debug = configAdapter.debug;
 
                 if (configAdapter.openRgbDevices !== undefined) {
                     var dev = configAdapter.openRgbDevices;
@@ -140,7 +198,27 @@ Singleton {
             root._loading = false;
         }
 
+        adapter: JsonAdapter {
+            id: configAdapter
+
+            property string fontFamily
+            property int fontSize
+            property string wallpaperDirectory
+            property bool disableHover
+            property bool floatingBar
+            property string barPosition
+            property var colors
+            property var openRgbDevices
+            property bool disableLockBlur
+            property bool disableLockAnimation
+            property bool lockScreenCustomBackground
+            property bool lockScreenMusicMode
+            property bool lazyLoadLockScreen
+            property bool debug
+        }
+
     }
+
     Timer {
         id: saveTimer
 
@@ -148,4 +226,5 @@ Singleton {
         repeat: false
         onTriggered: root.save()
     }
+
 }

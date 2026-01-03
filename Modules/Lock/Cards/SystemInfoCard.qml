@@ -1,7 +1,7 @@
+import "../Components"
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import "../Components"
 
 BentoCard {
     id: root
@@ -15,7 +15,6 @@ BentoCard {
         anchors.centerIn: parent
         spacing: 24
 
-        // Arch Logo
         Text {
             text: "󰣇"
             font.family: "Symbols Nerd Font"
@@ -23,11 +22,9 @@ BentoCard {
             color: root.colors.accent
         }
 
-        // System info column
         ColumnLayout {
             spacing: 5
 
-            // User@Host header
             Text {
                 text: Quickshell.env("USER") + "@archbtw"
                 font.weight: Font.Bold
@@ -37,7 +34,6 @@ BentoCard {
                 Layout.bottomMargin: 4
             }
 
-            // Separator line
             Rectangle {
                 Layout.preferredWidth: 180
                 Layout.preferredHeight: 2
@@ -46,7 +42,6 @@ BentoCard {
                 Layout.bottomMargin: 4
             }
 
-            // System info rows
             Repeater {
                 model: [{
                     "label": "OS",
@@ -106,10 +101,11 @@ BentoCard {
                         font.pixelSize: 13
                         font.family: "JetBrainsMono Nerd Font"
                     }
+
                 }
+
             }
 
-            // Color palette
             RowLayout {
                 spacing: 5
                 Layout.topMargin: 8
@@ -125,8 +121,13 @@ BentoCard {
                         radius: 2
                         color: modelData
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

@@ -8,7 +8,6 @@ Rectangle {
     property string label: ""
     property string sublabel: ""
     property string icon: ""
-    // Theme options
     property var colors: null
 
     implicitHeight: Math.max(64, container.implicitHeight + 24)
@@ -21,7 +20,6 @@ Rectangle {
         anchors.margins: 16
         spacing: 16
 
-        // Icon
         Rectangle {
             visible: root.icon !== ""
             Layout.preferredWidth: 40
@@ -39,7 +37,6 @@ Rectangle {
 
         }
 
-        // Text
         ColumnLayout {
             Layout.fillWidth: true
             spacing: 2
@@ -65,7 +62,6 @@ Rectangle {
 
         }
 
-        // Right side content (Switch, TextField, etc)
         RowLayout {
             id: container
 

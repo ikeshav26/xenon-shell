@@ -29,7 +29,6 @@ Singleton {
 
     property bool debugEnabled: false
 
-    // Debug log (only when debugEnabled is true)
     function d(...args) {
         if (debugEnabled) {
             var msg = _formatMessage("DEBUG", "\x1b[35m", ...args);
@@ -37,19 +36,16 @@ Singleton {
         }
     }
 
-    // Info log (always visible)
     function i(...args) {
         var msg = _formatMessage("INFO", "\x1b[32m", ...args);
         console.info(msg);
     }
 
-    // Warning log (always visible)
     function w(...args) {
         var msg = _formatMessage("WARN", "\x1b[33m", ...args);
         console.warn(msg);
     }
 
-    // Error log (always visible)
     function e(...args) {
         var msg = _formatMessage("ERROR", "\x1b[31m", ...args);
         console.error(msg);

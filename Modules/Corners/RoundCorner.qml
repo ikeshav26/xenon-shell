@@ -9,8 +9,8 @@ Item {
         BottomLeft,
         BottomRight
     }
-    property int corner: RoundCorner.CornerEnum.TopLeft 
 
+    property int corner: RoundCorner.CornerEnum.TopLeft
     property int size: 25
     property color color: "#000000"
 
@@ -24,11 +24,10 @@ Item {
         canvas.requestPaint();
     }
     onVisibleChanged: {
-        if (visible) {
+        if (visible)
             canvas.requestPaint();
-        }
-    }
 
+    }
     implicitWidth: size
     implicitHeight: size
 
@@ -37,7 +36,6 @@ Item {
 
         anchors.fill: parent
         antialiasing: true
-
         onPaint: {
             var ctx = getContext("2d");
             var r = root.size;
@@ -66,4 +64,5 @@ Item {
             ctx.fill();
         }
     }
+
 }

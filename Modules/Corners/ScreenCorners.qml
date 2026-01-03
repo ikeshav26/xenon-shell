@@ -8,11 +8,9 @@ PanelWindow {
 
     property var context
 
-    visible: !context.activeWindow.isFullscreen 
-
+    visible: !context.activeWindow.isFullscreen
     color: "transparent"
     exclusionMode: ExclusionMode.Ignore
-    
     WlrLayershell.namespace: "quickshell:screenCorners"
     WlrLayershell.layer: WlrLayer.Overlay
 
@@ -23,13 +21,9 @@ PanelWindow {
         bottom: true
     }
 
-    // Pass through input
-    mask: Region {
-        item: null
-    }
-
     RoundCorner {
         id: topLeft
+
         size: 25
         anchors.left: parent.left
         anchors.top: parent.top
@@ -40,6 +34,7 @@ PanelWindow {
 
     RoundCorner {
         id: topRight
+
         size: 25
         anchors.right: parent.right
         anchors.top: parent.top
@@ -50,6 +45,7 @@ PanelWindow {
 
     RoundCorner {
         id: bottomLeft
+
         size: 25
         anchors.left: parent.left
         anchors.bottom: parent.bottom
@@ -60,6 +56,7 @@ PanelWindow {
 
     RoundCorner {
         id: bottomRight
+
         size: 25
         anchors.right: parent.right
         anchors.bottom: parent.bottom
@@ -67,4 +64,9 @@ PanelWindow {
         corner: RoundCorner.CornerEnum.BottomRight
         color: context.colors.bg
     }
+
+    mask: Region {
+        item: null
+    }
+
 }

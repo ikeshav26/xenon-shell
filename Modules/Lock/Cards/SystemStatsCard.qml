@@ -1,7 +1,7 @@
+import "../Components"
 import QtQuick
 import QtQuick.Layouts
 import qs.Services
-import "../Components"
 
 BentoCard {
     id: root
@@ -24,7 +24,6 @@ BentoCard {
         anchors.margins: 14
         spacing: 10
 
-        // Header
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
@@ -42,6 +41,7 @@ BentoCard {
                     font.pixelSize: 12
                     color: root.colors.accent
                 }
+
             }
 
             Text {
@@ -50,15 +50,14 @@ BentoCard {
                 font.pixelSize: 12
                 font.bold: true
             }
+
         }
 
-        // Large CPU & RAM rings
         RowLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
             spacing: 8
 
-            // CPU
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -111,10 +110,11 @@ BentoCard {
                         font.bold: true
                         Layout.alignment: Qt.AlignHCenter
                     }
+
                 }
+
             }
 
-            // RAM
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -167,8 +167,13 @@ BentoCard {
                         font.bold: true
                         Layout.alignment: Qt.AlignHCenter
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

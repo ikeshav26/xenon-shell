@@ -19,11 +19,9 @@ PanelWindow {
     WlrLayershell.layer: WlrLayer.Overlay
     WlrLayershell.namespace: "notifications-toast"
     WlrLayershell.exclusiveZone: -1
-    // Width fixed, height grows with content up to a limit
     implicitWidth: 360
     implicitHeight: Math.min(contentList.contentHeight, 500) + 40 // More padding for badge
     color: "transparent"
-    // Only show window if there are notifications
     visible: manager.activeNotifications.count > 0
 
     anchors {
@@ -45,7 +43,6 @@ PanelWindow {
             id: listHover
         }
 
-        // Transitions
         add: Transition {
             NumberAnimation {
                 property: "opacity"
@@ -71,7 +68,7 @@ PanelWindow {
                     duration: 300
                     easing.type: Easing.OutQuad
                 }
-                
+
                 NumberAnimation {
                     property: "scale"
                     to: 0.8
@@ -86,7 +83,9 @@ PanelWindow {
                     easing.type: Easing.InBack
                     easing.overshoot: 1.2
                 }
+
             }
+
         }
 
         displaced: Transition {
@@ -104,13 +103,10 @@ PanelWindow {
             width: 320
             height: visible ? implicitHeight : 0 // Collapse hidden items
             implicitHeight: mainLayout.implicitHeight + 24 + 16 // Add padding for badge overhang
-            // Only show top 2
             visible: index < 2
             opacity: visible ? 1 : 0
-            // Shadows per item
             layer.enabled: true
 
-            // Render the notification content
             Rectangle {
                 id: bgRect
 
@@ -118,13 +114,11 @@ PanelWindow {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 height: mainLayout.implicitHeight + 24
-                
                 radius: 20
                 color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.95)
                 border.width: 1
                 border.color: model.urgency === 2 ? theme.urgent : Qt.rgba(theme.border.r, theme.border.g, theme.border.b, 0.5)
 
-                // Stack indicator badge
                 Rectangle {
                     visible: index === 1 && manager.activeNotifications.count > 2
                     width: 24
@@ -150,7 +144,6 @@ PanelWindow {
                     anchors.fill: parent
                     acceptedButtons: Qt.LeftButton | Qt.RightButton
                     onClicked: (mouse) => {
-                        // Dismiss this specific notification
                         manager.removeById(model.id);
                     }
 
@@ -169,7 +162,6 @@ PanelWindow {
                     anchors.margins: 12
                     spacing: 12
 
-                    // Icon / Image
                     Rectangle {
                         Layout.preferredWidth: 40
                         Layout.preferredHeight: 40
@@ -223,7 +215,6 @@ PanelWindow {
 
                     }
 
-                    // Text Content
                     ColumnLayout {
                         Layout.fillWidth: true
                         Layout.alignment: Qt.AlignVCenter
@@ -252,7 +243,6 @@ PanelWindow {
 
                     }
 
-                    // Circular Timer + Close
                     Item {
                         Layout.preferredWidth: 24
                         Layout.preferredHeight: 24
@@ -285,8 +275,6 @@ PanelWindow {
                                 ctx.stroke();
                             }
 
-                            // Animate based on remaining time?
-                            // Since we have a centralized timer, maybe just animate assuming 5s lifetime
                             NumberAnimation on progress {
                                 from: 1
                                 to: 0

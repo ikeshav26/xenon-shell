@@ -1,8 +1,8 @@
+import "../Components"
 import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
 import qs.Services
-import "../Components"
 
 BentoCard {
     id: root
@@ -13,7 +13,6 @@ BentoCard {
     borderColor: colors.border
     layer.enabled: true
 
-    // Blurred album art background
     Image {
         anchors.fill: parent
         source: MprisService.artUrl
@@ -25,14 +24,7 @@ BentoCard {
         layer.effect: FastBlur {
             radius: 32
         }
-    }
 
-    layer.effect: OpacityMask {
-        maskSource: Rectangle {
-            width: root.width
-            height: root.height
-            radius: 16
-        }
     }
 
     ColumnLayout {
@@ -44,7 +36,6 @@ BentoCard {
             Layout.fillWidth: true
             spacing: 12
 
-            // Album art with rounded corners
             Item {
                 Layout.preferredWidth: 64
                 Layout.preferredHeight: 64
@@ -62,7 +53,9 @@ BentoCard {
                     fillMode: Image.PreserveAspectCrop
                     visible: MprisService.artUrl !== ""
                     layer.enabled: true
+
                     layer.effect: OpacityMask {
+
                         maskSource: Rectangle {
                             x: 0
                             y: 0
@@ -70,7 +63,9 @@ BentoCard {
                             height: 64
                             radius: 12
                         }
+
                     }
+
                 }
 
                 Text {
@@ -81,6 +76,7 @@ BentoCard {
                     color: root.colors.muted
                     visible: MprisService.artUrl === ""
                 }
+
             }
 
             ColumnLayout {
@@ -112,10 +108,11 @@ BentoCard {
                 Item {
                     Layout.fillHeight: true
                 }
+
             }
+
         }
 
-        // Playback controls centered
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             spacing: 24
@@ -136,6 +133,7 @@ BentoCard {
                     onEntered: parent.opacity = 1
                     onExited: parent.opacity = 0.8
                 }
+
             }
 
             Rectangle {
@@ -157,6 +155,7 @@ BentoCard {
                     onClicked: MprisService.playPause()
                     cursorShape: Qt.PointingHandCursor
                 }
+
             }
 
             Text {
@@ -175,7 +174,21 @@ BentoCard {
                     onEntered: parent.opacity = 1
                     onExited: parent.opacity = 0.8
                 }
+
             }
+
         }
+
     }
+
+    layer.effect: OpacityMask {
+
+        maskSource: Rectangle {
+            width: root.width
+            height: root.height
+            radius: 16
+        }
+
+    }
+
 }

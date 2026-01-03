@@ -10,7 +10,6 @@ Singleton {
 
     readonly property BluetoothAdapter adapter: Bluetooth.defaultAdapter
     readonly property bool available: (adapter !== null)
-    // readonly property bool enabled: adapter?.enabled ?? false // QML doesn't support '??' well in some versions, simpler:
     readonly property bool enabled: (adapter && adapter.enabled !== undefined) ? adapter.enabled : false
     readonly property bool discovering: (adapter && adapter.discovering) ? adapter.discovering : false
     readonly property bool blocked: (adapter && adapter.state === BluetoothAdapterState.Blocked)
@@ -21,7 +20,6 @@ Singleton {
 
         var list = (adapter.devices && adapter.devices.values) ? adapter.devices.values : [];
         var globalList = (Bluetooth.devices && Bluetooth.devices.values) ? Bluetooth.devices.values : [];
-        // Prefer global list if adapter list is empty
         return (list.length > 0) ? list : globalList;
     }
     readonly property var connectedDevices: {
@@ -32,8 +30,6 @@ Singleton {
             return dev && dev.connected;
         });
     }
-    // --- Bluetooth Agent ---
-    // Needed for pairing authentication
     property var btAgent: null
     property bool btAgentRegistered: false
     property bool fallbackAgentAttempted: false
@@ -104,7 +100,6 @@ Singleton {
             return ;
 
         Logger.d("Bluetooth", "Pairing " + (device.name || device.address));
-        // Use bluetoothctl if our internal agent isn't ready, as it handles its own agent
         if (!btAgentRegistered) {
             pairWithBluetoothctl(device);
             return ;
@@ -113,7 +108,6 @@ Singleton {
             if (typeof device.pair === 'function') {
                 device.pair();
             } else {
-                // Fallback
                 device.trusted = true;
                 device.connect();
             }
@@ -202,7 +196,6 @@ Singleton {
     }
     Component.onCompleted: {
         try {
-            // Dynamic creation of BluetoothAgent to handle missing type definitions gracefully
             const qml = `
 import QtQuick
 import Quickshell
@@ -269,14 +262,12 @@ BluetoothAgent {
         onTriggered: startFallbackAgent()
     }
 
-    // Fallback agent using bluetoothctl
     Process {
         id: fallbackBluetoothctlAgent
 
         command: ["sh", "-c", "(pkill -f '^bt-agent( |$)' 2>/dev/null || true; pkill -f '^bluetoothctl( |$)' 2>/dev/null || true; " + "if command -v bt-agent >/dev/null 2>&1; then exec bt-agent -c DisplayYesNo; " + "else (printf 'agent off\nagent on\nagent KeyboardDisplay\ndefault-agent\n'; while sleep 3600; do :; done) | bluetoothctl; fi)"]
         running: false
 
-        // Drain output
         stdout: StdioCollector {
         }
 

@@ -13,9 +13,6 @@ Item {
 
         stdout: SplitParser {
             onRead: (data) => {
-                // df -k output: Filesystem 1K-blocks Used Available Use% Mounted on
-                // parts indices: 0          1         2    3         4    5
-
                 if (!data)
                     return ;
 

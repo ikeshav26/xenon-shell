@@ -26,6 +26,7 @@ PanelWindow {
     property bool isOpen: false
     readonly property int peekWidth: 10
     required property var globalState
+    property var _weatherKeepAlive: WeatherService
 
     function getX(open) {
         return 0; // Unused
@@ -48,7 +49,6 @@ PanelWindow {
         id: appColors
     }
 
-    // --- Persistent Services ---
     CpuService {
         id: cpuService
     }
@@ -65,16 +65,14 @@ PanelWindow {
         id: systemInfo
     }
 
-    // Keep WeatherService alive to prevent refetching on tab switch
-    property var _weatherKeepAlive: WeatherService
-
     Connections {
-        target: globalState
         function onRequestInfoPanelTab(tabIndex) {
-            root.currentTab = tabIndex
-            root.isOpen = true
-            root.forcedOpen = true
+            root.currentTab = tabIndex;
+            root.isOpen = true;
+            root.forcedOpen = true;
         }
+
+        target: globalState
     }
 
     Region {
@@ -94,14 +92,12 @@ PanelWindow {
         id: splitMask
 
         regions: [
-            // Peek region for Content Box (The visual hint)
             Region {
                 x: 0
                 y: contentBox.y
                 width: root.peekWidth
                 height: contentBox.height
             },
-            // Open regions (if any part is visible during transition)
             Region {
                 x: 0 // navBox.x might be negative, restrict to 0
                 y: navBox.y
@@ -142,22 +138,19 @@ PanelWindow {
         width: 64
         height: navColumn.implicitHeight + 32
         anchors.verticalCenter: parent.verticalCenter
-        // Logic:
-        // Open: x = 20
-        // Closed: Pushed behind? Maybe x = -width? Or x = -width - 20?
-        // If contentBox peeks at -width + peekWidth, navBox should be further left to be "behind" / hidden.
         x: (root.isOpen || root.forcedOpen) ? 20 : (-width - 20)
         radius: 16
         color: Qt.rgba(appColors.bg.r, appColors.bg.g, appColors.bg.b, 0.95)
         clip: true
         layer.enabled: root.isOpen || root.forcedOpen || root.height > 0
 
-        // Block clicks from propagating to background MouseArea
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true // Allow hover, but consume clicks
             acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onClicked: (mouse) => mouse.accepted = true
+            onClicked: (mouse) => {
+                return mouse.accepted = true;
+            }
         }
 
         Rectangle {
@@ -171,21 +164,14 @@ PanelWindow {
             property real animatedY2: targetY2
 
             function getYForIndex(idx) {
-                // Item height 36 + spacing 16 = 52
                 return idx * 52;
             }
 
             width: 36
             radius: 18
             color: appColors.accent
-            // Centered horizontally in navBox
             x: (parent.width - width) / 2
-            // Vertical position relative to navBox top
-            // navColumn is centered vertically.
-            // navColumn.y is the top of the column relative to navBox.
-            // We add the calculated Y offset.
             y: navColumn.y + Math.min(animatedY1, animatedY2)
-            // Height stretches during movement
             height: Math.abs(animatedY2 - animatedY1) + width
             onTargetY1Changed: animatedY1 = targetY1
             onTargetY2Changed: animatedY2 = targetY2
@@ -230,8 +216,6 @@ PanelWindow {
                 }]
 
                 Rectangle {
-                    // Removed color behavior as it's now transparent
-
                     required property var modelData
 
                     Layout.preferredWidth: 36
@@ -300,21 +284,19 @@ PanelWindow {
         width: loader.width + (root.currentTab === 1 ? 0 : 32)
         height: loader.height + (root.currentTab === 1 ? 0 : 32)
         anchors.verticalCenter: parent.verticalCenter
-        // Logic:
-        // Open: x = 20 + navBox.width + spacing
-        // Closed: Peeking from left. x = -width + peekWidth
         x: (root.isOpen || root.forcedOpen) ? (20 + navBox.width + spacing) : (-width + root.peekWidth)
         radius: 16
         color: Qt.rgba(appColors.bg.r, appColors.bg.g, appColors.bg.b, 0.95)
         clip: true
         layer.enabled: root.isOpen || root.forcedOpen || root.height > 0
 
-        // Block clicks from propagating to background MouseArea
         MouseArea {
             anchors.fill: parent
             hoverEnabled: true // Allow hover, but consume clicks
             acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onClicked: (mouse) => mouse.accepted = true
+            onClicked: (mouse) => {
+                return mouse.accepted = true;
+            }
         }
 
         Loader {
@@ -390,7 +372,6 @@ PanelWindow {
 
     }
 
-    // Update Peek Handler to trigger on contentBox area
     Rectangle {
         color: "transparent"
         x: 0
@@ -445,7 +426,9 @@ PanelWindow {
                 Layout.fillWidth: true
                 theme: appColors
             }
+
         }
+
     }
 
     Component {

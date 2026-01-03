@@ -34,7 +34,6 @@ ColumnLayout {
         }
     }
 
-    // OpenRGB Devices
     SettingItem {
         label: "OpenRGB Devices"
         sublabel: "Device indices (comma separated)"
@@ -43,7 +42,6 @@ ColumnLayout {
 
         TextField {
             Layout.preferredWidth: 350
-            // Hacky check for array
             text: (Config.openRgbDevices && Array.isArray(Config.openRgbDevices)) ? Config.openRgbDevices.join(", ") : (Config.openRgbDevices || "")
             placeholderText: "e.g. 0, 1"
             font.pixelSize: 13

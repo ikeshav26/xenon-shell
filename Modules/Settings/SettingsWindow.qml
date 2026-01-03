@@ -26,8 +26,6 @@ FloatingWindow {
     }
     implicitWidth: windowWidth
     implicitHeight: windowHeight
-    // Title for hyprland/window rules
-    // Quickshell FloatingWindow title property:
     title: "Settings"
     color: "transparent"
 
@@ -43,7 +41,6 @@ FloatingWindow {
             anchors.fill: parent
             spacing: 0
 
-            // --- Sidebar ---
             Rectangle {
                 Layout.preferredWidth: sidebarCollapsed ? 80 : 240
                 Layout.fillHeight: true
@@ -54,7 +51,6 @@ FloatingWindow {
                     anchors.margins: 20
                     spacing: 12
 
-                    // Toggle Button
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 32
@@ -84,7 +80,6 @@ FloatingWindow {
 
                     }
 
-                    // Header / Config File
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 48
@@ -165,7 +160,6 @@ FloatingWindow {
                         Layout.fillHeight: true
                     }
 
-                    // Navigation Items
                     component SidebarItem: Rectangle {
                         property string label
                         property string icon
@@ -180,7 +174,6 @@ FloatingWindow {
                         RowLayout {
                             anchors.fill: parent
                             anchors.leftMargin: sidebarCollapsed ? 0 : 16
-                            // Removed conflicting horizontalCenter anchor
                             spacing: sidebarCollapsed ? 0 : 16
 
                             Text {
@@ -241,13 +234,11 @@ FloatingWindow {
 
             }
 
-            // --- Content Area ---
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 color: "transparent"
 
-                // Close Button (Fixed Top Right)
                 Rectangle {
                     anchors.right: parent.right
                     anchors.top: parent.top

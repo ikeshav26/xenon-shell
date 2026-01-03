@@ -18,7 +18,6 @@ Singleton {
     readonly property bool scanning: rescanProc.running
 
     Component.onDestruction: {
-        // Clean up all dynamically created objects before engine shuts down
         while (networks.length > 0) {
             var obj = networks.shift();
             if (obj) obj.destroy();
@@ -101,19 +100,14 @@ Singleton {
         command: ["nmcli", "-g", "TYPE,STATE", "device"]
         stdout: SplitParser {
             onRead: data => {
-                // Check if any line contains "ethernet:connected"
                 if (data.indexOf("ethernet:connected") !== -1) {
                      root.ethernetConnected = true
                 } else if (data.indexOf("ethernet") !== -1 && data.indexOf("connected") === -1) {
-                     // Only reset if we see ethernet but it's not connected, 
-                     // or elaborate logic. simpler: just check the whole output chunk if possible?
-                     // SplitParser gives chunks. StdioCollector might be safer for full output parsing.
                 }
             }
         }
     }
     
-    // Better to use StdioCollector for full list check
     Process {
         id: ethernetCheck
         command: ["nmcli", "-g", "TYPE,STATE", "device"]

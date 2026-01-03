@@ -13,8 +13,8 @@ Item {
 
     Canvas {
         id: canvas
-        anchors.fill: parent
 
+        anchors.fill: parent
         onPaint: {
             var ctx = getContext("2d");
             ctx.reset();
@@ -31,13 +31,16 @@ Item {
             ctx.lineWidth = lw;
             ctx.stroke();
         }
-
         Component.onCompleted: requestPaint()
 
         Connections {
+            function onProgressChanged() {
+                canvas.requestPaint();
+            }
+
             target: root
-            function onProgressChanged() { canvas.requestPaint() }
         }
+
     }
 
     ColumnLayout {
@@ -58,5 +61,7 @@ Item {
             font.pixelSize: 7
             Layout.alignment: Qt.AlignHCenter
         }
+
     }
+
 }

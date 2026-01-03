@@ -62,9 +62,7 @@ Singleton {
         currentWallpapers[screenName] = path;
         saveTimer.restart();
         root.wallpaperChanged(screenName, path);
-
         Logger.d("Wallpaper", "Set wallpaper for", screenName, "to", path);
-        // Copy to fixed path for fast loading
         wallpaperCopier.command = ["cp", path, Quickshell.env("HOME") + "/.cache/mannu/current_wallpaper"];
         wallpaperCopier.running = true;
         generateColors(path);
@@ -83,7 +81,6 @@ Singleton {
     }
 
     function applyOpenRGB() {
-        // Reload the colors file to get latest data
         colorsFileView.path = "";
         colorsFileView.path = colorsCacheFile;
     }
@@ -97,7 +94,6 @@ Singleton {
 
     function refreshWallpapersList() {
         Logger.d("Wallpaper", "Refreshing wallpapers list");
-        // Trigger thumbnail generation
         thumbnailGenerator.command = ["python3", "/etc/xdg/quickshell/mannu/Scripts/generate_previews.py", root.defaultDirectory, root.previewDirectory];
         thumbnailGenerator.running = true;
         scanningCount = 0;
@@ -131,7 +127,6 @@ Singleton {
         onExited: (code, status) => {
             if (code === 0) {
                 Logger.d("Wallpaper", "Matugen finished successfully");
-                // Wait a moment for file to be written, then apply OpenRGB
                 Qt.callLater(applyOpenRGB);
             } else {
                 Logger.e("Wallpaper", "Matugen failed with code:", code);

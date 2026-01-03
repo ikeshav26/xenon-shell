@@ -1,14 +1,14 @@
+import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Io
-import Quickshell.Services.UPower
 import Quickshell.Services.SystemTray
+import Quickshell.Services.UPower
 import qs.Core
 import qs.Services
 import qs.Widgets
-import Qt5Compat.GraphicalEffects
 
 Rectangle {
     id: barRoot
@@ -20,15 +20,10 @@ Rectangle {
     required property int volumeLevel
     required property string time
     property bool floating: true
-    
-
     property bool trayOpen: false
-
     property var volumeService
     property var networkService
     property var globalState
-    
-
     property var battery: UPower.displayDevice
     property real batteryPercent: battery && battery.percentage !== undefined ? battery.percentage * 100 : 0
     property bool batteryCharging: battery && battery.state === UPowerDeviceState.Charging
@@ -40,15 +35,12 @@ Rectangle {
     radius: floating ? 12 : 0
     border.width: 0
 
-
-
     RowLayout {
         anchors.fill: parent
         anchors.leftMargin: 12
         anchors.rightMargin: 12
         spacing: 12
 
-        // 1. Logo
         Rectangle {
             Layout.preferredWidth: 26
             Layout.preferredHeight: 26
@@ -63,11 +55,12 @@ Rectangle {
                 fillMode: Image.PreserveAspectFit
                 opacity: 0.9
             }
+
         }
 
-        VerticalDivider { }
+        VerticalDivider {
+        }
 
-        // 2. Workspace Switcher
         Rectangle {
             id: wsContainer
 
@@ -125,13 +118,16 @@ Rectangle {
                                 easing.type: Easing.OutBack
                                 easing.overshoot: 1.2
                             }
+
                         }
 
                         Behavior on color {
                             ColorAnimation {
                                 duration: 200
                             }
+
                         }
+
                     }
 
                     MouseArea {
@@ -140,120 +136,120 @@ Rectangle {
                         onClicked: Hyprland.dispatch("workspace " + parent.wsIndex)
                         cursorShape: Qt.PointingHandCursor
                     }
+
                 }
+
             }
+
         }
 
-        VerticalDivider { }
+        VerticalDivider {
+        }
 
-        // 4. Unique Music Widget (Spinning Vinyl)
         Rectangle {
             id: mediaWidget
 
             property bool showInfo: false
             property bool hasMedia: MprisService.title !== ""
             property real componentsOpacity: showInfo ? 1 : 0
-            
+
             Layout.preferredHeight: 28 // Slightly taller for better look
             Layout.preferredWidth: showInfo ? Math.min(mediaContent.implicitWidth + 36, 300) : 28
             radius: 14 // Fully rounded
-            
             color: showInfo ? Qt.rgba(0, 0, 0, 0.4) : "transparent"
             border.color: colors.accent
             border.width: (showInfo || MprisService.isPlaying) ? 1 : 0
             clip: true
 
-            Behavior on Layout.preferredWidth { NumberAnimation { duration: 350; easing.type: Easing.OutBack } }
-            Behavior on color { ColorAnimation { duration: 200 } }
-            Behavior on border.width { NumberAnimation { duration: 200 } }
-
-            // Interaction Handler
             MouseArea {
                 id: mediaMouse
+
                 anchors.fill: parent
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton | Qt.RightButton
                 cursorShape: Qt.PointingHandCursor
-                
                 onClicked: (mouse) => {
-                    if (mouse.button === Qt.LeftButton) {
-                        globalState.requestInfoPanelTab(1)
-                    } else if (mouse.button === Qt.RightButton) {
-                        parent.showInfo = !parent.showInfo
-                    }
+                    if (mouse.button === Qt.LeftButton)
+                        globalState.requestInfoPanelTab(1);
+                    else if (mouse.button === Qt.RightButton)
+                        parent.showInfo = !parent.showInfo;
                 }
             }
 
-            // 1. Spinning Vinyl (Art)
             Item {
                 id: vinylContainer
-                
+
                 width: 24
                 height: 24
                 anchors.left: parent.left
                 anchors.leftMargin: 2
                 anchors.verticalCenter: parent.verticalCenter
-                
-                // Rotation Logic
-                RotationAnimation on rotation {
-                    from: 0; to: 360
-                    duration: 4000
-                    loops: Animation.Infinite
-                    running: MprisService.isPlaying
-                }
 
-                // Art Ring
                 Rectangle {
                     anchors.fill: parent
                     radius: 12
                     color: "#1a1a1a"
                     border.color: colors.accent
                     border.width: 1
-                    
+
                     Image {
                         anchors.fill: parent
                         anchors.margins: 2
                         source: MprisService.artUrl !== "" ? MprisService.artUrl : "../../Assets/music.svg" // Fallback
                         fillMode: Image.PreserveAspectCrop
                         layer.enabled: true
+
                         layer.effect: OpacityMask {
+
                             maskSource: Rectangle {
-                                width: 20; height: 20; radius: 10
+                                width: 20
+                                height: 20
+                                radius: 10
                             }
+
                         }
+
                     }
-                    
-                    // Center hole
+
                     Rectangle {
-                        width: 6; height: 6
+                        width: 6
+                        height: 6
                         radius: 3
                         color: "#2a2a2a"
                         anchors.centerIn: parent
                         border.color: "#000000"
                         border.width: 1
                     }
+
                 }
+
+                RotationAnimation on rotation {
+                    from: 0
+                    to: 360
+                    duration: 4000
+                    loops: Animation.Infinite
+                    running: MprisService.isPlaying
+                }
+
             }
 
-            // 2. Expanded Content
             RowLayout {
                 id: mediaContent
-                
+
                 anchors.left: vinylContainer.right
                 anchors.leftMargin: 12
                 anchors.verticalCenter: parent.verticalCenter
                 spacing: 12
-                
                 opacity: mediaWidget.componentsOpacity
                 visible: opacity > 0
-                Behavior on opacity { NumberAnimation { duration: 200 } }
 
-                // Info (Single Line)
                 Text {
                     text: {
                         let t = MprisService.title !== "" ? MprisService.title : "No Media";
                         let a = MprisService.artist;
-                        if (a !== "" && a !== "Unknown Artist") return t + " • " + a;
+                        if (a !== "" && a !== "Unknown Artist")
+                            return t + " • " + a;
+
                         return t;
                     }
                     font.family: fontFamily
@@ -266,58 +262,101 @@ Rectangle {
                     Layout.alignment: Qt.AlignVCenter
                     verticalAlignment: Text.AlignVCenter
                 }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 200
+                    }
+
+                }
+
             }
+
+            Behavior on Layout.preferredWidth {
+                NumberAnimation {
+                    duration: 350
+                    easing.type: Easing.OutBack
+                }
+
+            }
+
+            Behavior on color {
+                ColorAnimation {
+                    duration: 200
+                }
+
+            }
+
+            Behavior on border.width {
+                NumberAnimation {
+                    duration: 200
+                }
+
+            }
+
         }
 
-        Item { Layout.fillWidth: true }
+        Item {
+            Layout.fillWidth: true
+        }
 
+        Item {
+            Layout.fillWidth: true
+        }
 
-        Item { Layout.fillWidth: true }
-
-        
         RowLayout {
             visible: SystemTray.items.values.length > 0
-            spacing: 2 
+            spacing: 2
 
-            
             Rectangle {
                 clip: true
                 height: 26
                 radius: height / 2
-                color: Qt.rgba(0, 0, 0, 0.2) 
+                color: Qt.rgba(0, 0, 0, 0.2)
                 border.color: colors.muted
                 border.width: 1
-
-                
                 Layout.preferredWidth: trayOpen ? (trayInner.implicitWidth + 16) : 0
                 Layout.rightMargin: trayOpen ? 4 : 0
                 opacity: trayOpen ? 1 : 0
 
-
-                Behavior on Layout.preferredWidth {
-                    NumberAnimation { duration: 350; easing.type: Easing.OutQuart }
-                }
-                Behavior on Layout.rightMargin {
-                    NumberAnimation { duration: 350; easing.type: Easing.OutQuart }
-                }
-                Behavior on opacity {
-                    NumberAnimation { duration: 250 }
-                }
-
-
                 RowLayout {
                     id: trayInner
+
                     anchors.centerIn: parent
                     spacing: 8
-                    
+
                     Tray {
-                        borderColor: "transparent" 
+                        borderColor: "transparent"
                         itemHoverColor: colors.accent
                         iconSize: 16
                     }
-                }
-            }
 
+                }
+
+                Behavior on Layout.preferredWidth {
+                    NumberAnimation {
+                        duration: 350
+                        easing.type: Easing.OutQuart
+                    }
+
+                }
+
+                Behavior on Layout.rightMargin {
+                    NumberAnimation {
+                        duration: 350
+                        easing.type: Easing.OutQuart
+                    }
+
+                }
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 250
+                    }
+
+                }
+
+            }
 
             Rectangle {
                 Layout.preferredWidth: 26
@@ -329,17 +368,27 @@ Rectangle {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "" 
+                    text: ""
                     font.family: "Symbols Nerd Font"
                     font.pixelSize: 14
                     color: trayOpen ? colors.bg : colors.fg
-                    
+                    rotation: trayOpen ? 180 : 0
 
-                    rotation: trayOpen ? 180 : 0 
                     Behavior on rotation {
-                        NumberAnimation { duration: 300; easing.type: Easing.OutBack }
+                        NumberAnimation {
+                            duration: 300
+                            easing.type: Easing.OutBack
+                        }
+
                     }
-                    Behavior on color { ColorAnimation { duration: 200 } }
+
+                    Behavior on color {
+                        ColorAnimation {
+                            duration: 200
+                        }
+
+                    }
+
                 }
 
                 MouseArea {
@@ -347,29 +396,37 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     hoverEnabled: true
                     onClicked: barRoot.trayOpen = !barRoot.trayOpen
-                    
                     onEntered: parent.border.color = colors.accent
                     onExited: parent.border.color = colors.muted
                 }
-                
-                Behavior on color { ColorAnimation { duration: 200 } }
-                Behavior on border.color { ColorAnimation { duration: 200 } }
+
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 200
+                    }
+
+                }
+
+                Behavior on border.color {
+                    ColorAnimation {
+                        duration: 200
+                    }
+
+                }
+
             }
+
         }
 
-        VerticalDivider { 
-            visible: SystemTray.items.values.length > 0 
+        VerticalDivider {
+            visible: SystemTray.items.values.length > 0
         }
 
-
-        // 7. System Status
         InfoPill {
-            
-            // Network
             RowLayout {
                 visible: networkService
                 spacing: 6
-                
+
                 Text {
                     text: networkService.ethernetConnected ? "󰈀" : (networkService.wifiEnabled ? "󰖩" : "󰖪")
                     color: (networkService.ethernetConnected || networkService.wifiEnabled) ? colors.purple : colors.muted
@@ -380,10 +437,15 @@ Rectangle {
 
                 Text {
                     id: tNet
+
                     text: {
-                         if (networkService.active) return networkService.active.ssid;
-                         if (networkService.ethernetConnected) return "Ethernet";
-                         return networkService.wifiEnabled ? "Disconnected" : "Off";
+                        if (networkService.active)
+                            return networkService.active.ssid;
+
+                        if (networkService.ethernetConnected)
+                            return "Ethernet";
+
+                        return networkService.wifiEnabled ? "Disconnected" : "Off";
                     }
                     color: colors.fg
                     font.pixelSize: fontSize - 1
@@ -397,20 +459,25 @@ Rectangle {
                 TapHandler {
                     onTapped: globalState.requestSidePanelMenu("wifi")
                 }
+
                 HoverHandler {
                     cursorShape: Qt.PointingHandCursor
                 }
+
             }
 
-            VerticalDivider { visible: networkService; Layout.preferredHeight: 12 }
+            VerticalDivider {
+                visible: networkService
+                Layout.preferredHeight: 12
+            }
 
-            // Volume
             Item {
                 Layout.preferredHeight: volumeLayout.implicitHeight
                 Layout.preferredWidth: volumeLayout.implicitWidth
-                
+
                 RowLayout {
                     id: volumeLayout
+
                     anchors.centerIn: parent
                     spacing: 6
 
@@ -420,11 +487,16 @@ Rectangle {
                         font.family: "Symbols Nerd Font"
                         font.pixelSize: fontSize + 2
                         Layout.alignment: Qt.AlignBaseline
-                        Behavior on text { enabled: false }
+
+                        Behavior on text {
+                            enabled: false
+                        }
+
                     }
 
                     Text {
                         id: tVol
+
                         text: (volumeService && volumeService.muted) ? "MUT" : (volumeLevel + "%")
                         color: (volumeService && volumeService.muted) ? colors.red : colors.fg
                         font.pixelSize: fontSize - 1
@@ -432,28 +504,36 @@ Rectangle {
                         font.bold: true
                         Layout.alignment: Qt.AlignBaseline
                     }
+
                 }
 
                 MouseArea {
                     anchors.fill: parent
                     cursorShape: Qt.PointingHandCursor
                     acceptedButtons: Qt.LeftButton
-
                     onClicked: {
-                        if (volumeService) volumeService.toggleMute();
-                    }
+                        if (volumeService)
+                            volumeService.toggleMute();
 
+                    }
                     onWheel: (wheel) => {
-                        if (!volumeService) return;
-                        if (wheel.angleDelta.y > 0) volumeService.increaseVolume();
-                        else volumeService.decreaseVolume();
+                        if (!volumeService)
+                            return ;
+
+                        if (wheel.angleDelta.y > 0)
+                            volumeService.increaseVolume();
+                        else
+                            volumeService.decreaseVolume();
                     }
                 }
+
             }
 
-            VerticalDivider { visible: batteryReady; Layout.preferredHeight: 12 }
+            VerticalDivider {
+                visible: batteryReady
+                Layout.preferredHeight: 12
+            }
 
-            // Battery
             RowLayout {
                 visible: batteryReady
                 spacing: 6
@@ -474,17 +554,17 @@ Rectangle {
                     font.bold: true
                     Layout.alignment: Qt.AlignBaseline
                 }
-                
+
                 TapHandler {
                     onTapped: {
-                        console.log("Battery: " + Math.round(batteryPercent) + "%")
+                        console.log("Battery: " + Math.round(batteryPercent) + "%");
                     }
                 }
+
             }
+
         }
 
-
-        // 11. Power Menu
         Rectangle {
             Layout.preferredHeight: 26
             Layout.preferredWidth: 26
@@ -503,6 +583,7 @@ Rectangle {
 
             Process {
                 id: powerMenuIpcProcess
+
                 command: ["quickshell", "ipc", "-c", "mannu", "call", "powermenu", "toggle"]
             }
 
@@ -514,19 +595,21 @@ Rectangle {
                 onExited: parent.color = "transparent"
                 onClicked: powerMenuIpcProcess.running = true
             }
+
         }
+
     }
 
-    // 10. Clock (Centered)
     Rectangle {
         anchors.centerIn: parent
         height: 26
         width: clockText.implicitWidth + 24
         radius: height / 2
         color: colors.accent
-        
+
         Text {
             id: clockText
+
             anchors.centerIn: parent
             text: time
             color: colors.bg
@@ -541,8 +624,8 @@ Rectangle {
             cursorShape: Qt.PointingHandCursor
             hoverEnabled: true
         }
-    }
 
+    }
 
     component VerticalDivider: Rectangle {
         Layout.preferredWidth: 1
@@ -565,8 +648,11 @@ Rectangle {
 
         RowLayout {
             id: innerLayout
+
             anchors.centerIn: parent
             spacing: 8
         }
+
     }
+
 }

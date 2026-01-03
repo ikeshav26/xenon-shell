@@ -11,9 +11,6 @@ Item {
     property int notificationCounter: 0
     property ListModel activeNotifications
 
-    activeNotifications: ListModel {
-    }
-
     function closePopup() {
         popupVisible = false;
     }
@@ -39,14 +36,12 @@ Item {
 
     function removeById(notifId) {
         Logger.d("NotifMan", "Removing notification with ID:", notifId);
-        // Remove from active list (popup)
         for (var i = 0; i < activeNotifications.count; i++) {
             if (activeNotifications.get(i).id === notifId) {
                 activeNotifications.remove(i);
                 break;
             }
         }
-        // Remove from history
         for (var i = 0; i < notifications.count; i++) {
             var item = notifications.get(i);
             if (item.id === notifId) {
@@ -66,14 +61,12 @@ Item {
     }
 
     function removeSilent(notifId) {
-        // Remove from active list
         for (var i = 0; i < activeNotifications.count; i++) {
             if (activeNotifications.get(i).id === notifId) {
                 activeNotifications.remove(i);
                 break;
             }
         }
-        // Remove from history
         for (var i = 0; i < notifications.count; i++) {
             if (notifications.get(i).id === notifId) {
                 notifications.remove(i);
@@ -83,7 +76,6 @@ Item {
     }
 
     function removeByRef(notificationRef) {
-        // Remove from active list
         for (var i = 0; i < activeNotifications.count; i++) {
             if (activeNotifications.get(i).ref === notificationRef) {
                 activeNotifications.remove(i);
@@ -105,8 +97,6 @@ Item {
         imageSupported: true
         actionsSupported: true
         onNotification: (notification) => {
-            // 5 seconds display time
-
             notification.tracked = true;
             var uniqueId = root.notificationCounter++;
             var entry = {
@@ -121,9 +111,7 @@ Item {
                 "time": Qt.formatTime(new Date(), "hh:mm"),
                 "expireTime": Date.now() + 5000
             };
-            // Add to history
             root.notifications.insert(0, entry);
-            // Add to active notifications (stack)
             root.activeNotifications.insert(0, entry);
             Logger.d("NotifMan", "Notification added:", notification.summary, "ID:", uniqueId, "Stack count:", root.activeNotifications.count);
             root.popupVisible = true;
@@ -144,7 +132,6 @@ Item {
         onTriggered: {
             var now = Date.now();
             var kept = false;
-            // Iterate backwards to safe remove
             for (var i = root.activeNotifications.count - 1; i >= 0; i--) {
                 var item = root.activeNotifications.get(i);
                 if (now >= item.expireTime)
@@ -156,6 +143,9 @@ Item {
                 root.popupVisible = false;
 
         }
+    }
+
+    activeNotifications: ListModel {
     }
 
     notifications: ListModel {

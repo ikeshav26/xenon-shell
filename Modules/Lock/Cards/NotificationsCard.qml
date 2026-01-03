@@ -1,6 +1,6 @@
+import "../Components"
 import QtQuick
 import QtQuick.Layouts
-import "../Components"
 
 BentoCard {
     id: root
@@ -37,6 +37,7 @@ BentoCard {
                 font.bold: true
                 visible: root.notifications.count > 0
             }
+
         }
 
         Rectangle {
@@ -46,13 +47,11 @@ BentoCard {
             opacity: 0.4
         }
 
-        // Notification list or empty state
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
             clip: true
 
-            // Empty state
             ColumnLayout {
                 anchors.centerIn: parent
                 spacing: 4
@@ -73,9 +72,9 @@ BentoCard {
                     font.pixelSize: 10
                     Layout.alignment: Qt.AlignHCenter
                 }
+
             }
 
-            // Notification list
             ListView {
                 anchors.fill: parent
                 model: root.notifications
@@ -115,6 +114,7 @@ BentoCard {
                                 font.pixelSize: 14
                                 color: root.colors.accent
                             }
+
                         }
 
                         ColumnLayout {
@@ -139,6 +139,7 @@ BentoCard {
                                 elide: Text.ElideRight
                                 maximumLineCount: 1
                             }
+
                         }
 
                         Text {
@@ -147,9 +148,15 @@ BentoCard {
                             font.pixelSize: 8
                             Layout.alignment: Qt.AlignTop
                         }
+
                     }
+
                 }
+
             }
+
         }
+
     }
+
 }

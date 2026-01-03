@@ -29,7 +29,11 @@ Column {
                 ColorAnimation {
                     duration: 200
                 }
+
             }
+
         }
+
     }
+
 }

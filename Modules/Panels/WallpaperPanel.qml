@@ -67,7 +67,6 @@ PanelWindow {
                 updateWallpaperData();
                 searchInput.text = "";
                 filterText = "";
-                // Select current wallpaper
                 var idx = filteredWallpapers.indexOf(currentWallpaper);
                 if (idx !== -1) {
                     wallpaperGrid.currentIndex = idx;
@@ -335,7 +334,6 @@ PanelWindow {
 
                             anchors.fill: parent
                             anchors.margins: 4
-                            // Try thumbnail first, fallback to original
                             source: thumbSource
                             opacity: status === Image.Ready ? 1 : 0
                             onStatusChanged: {

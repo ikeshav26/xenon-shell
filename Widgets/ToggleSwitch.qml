@@ -6,12 +6,10 @@ Item {
 
     property bool checked: false
     property var colors: null
-    // Colors
     property color activeColor: colors ? colors.accent : "#CBA6F7"
     property color inactiveColor: colors ? colors.surface : "#313244"
     property color thumbColor: colors ? colors.fg : "#CDD6F4"
 
-    // Size configuration
     implicitWidth: 44
     implicitHeight: 24
 

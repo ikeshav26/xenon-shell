@@ -70,11 +70,9 @@ Singleton {
                 for (let i = 0, len = data.length - 1; i < len; i++) {
                     const c = data.charCodeAt(i);
                     if (c === 59) {
-                        // semicolon
                         buffer[idx++] = num * 0.01;
                         num = 0;
                     } else if (c >= 48 && c <= 57) {
-                        // 0-9
                         num = num * 10 + (c - 48);
                     }
                 }

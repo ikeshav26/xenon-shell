@@ -12,7 +12,6 @@ Singleton {
     property string artist: activePlayer ? activePlayer.trackArtist : ""
     property string album: activePlayer ? activePlayer.trackAlbum : ""
     property string artUrl: activePlayer ? activePlayer.trackArtUrl : ""
-    // Progress properties
     property double position: 0
     property double length: activePlayer ? activePlayer.length : 0
 

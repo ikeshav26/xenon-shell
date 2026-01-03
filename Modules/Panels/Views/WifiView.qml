@@ -247,8 +247,6 @@ Control {
             Layout.fillHeight: true
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            
-            // Optional icon above text
             font.bold: NetworkService.ethernetConnected
         }
 

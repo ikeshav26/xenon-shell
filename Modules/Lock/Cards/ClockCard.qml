@@ -1,12 +1,11 @@
+import "../Components"
 import QtQuick
 import QtQuick.Layouts
-import "../Components"
 
 BentoCard {
     id: root
 
     required property var colors
-
     property int hours: new Date().getHours()
     property int minutes: new Date().getMinutes()
     property int seconds: new Date().getSeconds()
@@ -30,12 +29,10 @@ BentoCard {
         anchors.centerIn: parent
         spacing: 16
 
-        // BCD Binary display (6 columns)
         RowLayout {
             Layout.alignment: Qt.AlignHCenter
             spacing: 8
 
-            // Hours (H1: 2 bits, H2: 4 bits)
             RowLayout {
                 spacing: 6
 
@@ -52,9 +49,9 @@ BentoCard {
                     dotSize: 14
                     activeColor: root.colors.accent
                 }
+
             }
 
-            // Separator
             Rectangle {
                 width: 2
                 height: 80
@@ -63,7 +60,6 @@ BentoCard {
                 opacity: 0.4
             }
 
-            // Minutes (M1: 3 bits, M2: 4 bits)
             RowLayout {
                 spacing: 6
 
@@ -80,9 +76,9 @@ BentoCard {
                     dotSize: 14
                     activeColor: root.colors.secondary
                 }
+
             }
 
-            // Separator
             Rectangle {
                 width: 2
                 height: 80
@@ -91,7 +87,6 @@ BentoCard {
                 opacity: 0.4
             }
 
-            // Seconds (S1: 3 bits, S2: 4 bits)
             RowLayout {
                 spacing: 6
 
@@ -108,10 +103,11 @@ BentoCard {
                     dotSize: 14
                     activeColor: root.colors.teal
                 }
+
             }
+
         }
 
-        // Digital time below
         Text {
             text: root.hours.toString().padStart(2, '0') + ":" + root.minutes.toString().padStart(2, '0') + ":" + root.seconds.toString().padStart(2, '0')
             font.pixelSize: 20
@@ -121,12 +117,13 @@ BentoCard {
             Layout.alignment: Qt.AlignHCenter
         }
 
-        // Date
         Text {
             text: Qt.formatDate(new Date(), "ddd, MMM d")
             font.pixelSize: 13
             color: root.colors.muted
             Layout.alignment: Qt.AlignHCenter
         }
+
     }
+
 }
