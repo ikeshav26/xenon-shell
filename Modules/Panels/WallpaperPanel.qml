@@ -102,7 +102,7 @@ PanelWindow {
         id: slideContainer
         
         height: 260
-        width: parent.width * 0.5
+        width: parent.width * 0.4
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.bottom: parent.bottom
         
@@ -156,7 +156,7 @@ PanelWindow {
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 20
+                    height: 21
                     color: parent.color
                 }
             }
@@ -174,7 +174,7 @@ PanelWindow {
                     anchors.bottom: parent.bottom
                     anchors.left: parent.left
                     anchors.right: parent.right
-                    height: 3
+                    height: 4
                     color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.98)
                 }
             }
@@ -188,7 +188,7 @@ PanelWindow {
                 anchors.bottomMargin: 20
                 
                 orientation: ListView.Horizontal
-                spacing: 4
+                spacing: 2
                 clip: true
                 topMargin: 4
                 bottomMargin: 4
