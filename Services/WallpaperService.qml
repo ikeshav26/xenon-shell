@@ -61,8 +61,7 @@ Singleton {
         var oldPath = currentWallpapers[screenName] || "";
         currentWallpapers[screenName] = path;
         saveTimer.restart();
-        if (oldPath !== path)
-            root.wallpaperChanged(screenName, path);
+        root.wallpaperChanged(screenName, path);
 
         Logger.d("Wallpaper", "Set wallpaper for", screenName, "to", path);
         // Copy to fixed path for fast loading

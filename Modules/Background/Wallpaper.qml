@@ -246,9 +246,32 @@ Item {
         function onWallpaperChanged(changedScreenName, path) {
             if (changedScreenName === screenName) {
                 Logger.d("Wallpaper", "Wallpaper changed for", screenName, "to", path);
+                
+                // Always use Fade transition (0) as requested
+                transitionType = 0;
+                
+                // Update source. Even if it's the same string, we want to ensure logic runs.
                 root.source = "file://" + path;
-                transitionType = Math.floor(Math.random() * 15);
-                Logger.d("Wallpaper", "Selected transition type:", transitionType);
+                
+                // Manually trigger the transition logic because if the source is identical (A->A) 
+                // or if it was previously loaded (A->B->A), the Image element might not trigger 
+                // statusChanged if it's already Ready.
+                
+                var nextImage = (currentImage === img1) ? img2 : img1;
+                
+                // Ensure next image has the correct source
+                if (nextImage.source !== root.source) {
+                    nextImage.source = root.source;
+                }
+                
+                // If the image is already ready (cached), apply transition immediately
+                if (nextImage.status === Image.Ready) {
+                     Logger.d("Wallpaper", "Image already ready, applying transition immediately");
+                     applyTransition(nextImage, (nextImage === img1 ? img2 : img1));
+                } else {
+                     // If not ready, ensure it's hidden until it loads (handled by onStatusChanged)
+                     nextImage.opacity = 0;
+                }
             }
         }
 
