@@ -213,7 +213,7 @@ Rectangle {
                     Image {
                         anchors.fill: parent
                         anchors.margins: 2
-                        source: MprisService.artUrl !== "" ? MprisService.artUrl : "../../Assets/arch.svg" // Fallback
+                        source: MprisService.artUrl !== "" ? MprisService.artUrl : "../../Assets/music.svg" // Fallback
                         fillMode: Image.PreserveAspectCrop
                         layer.enabled: true
                         layer.effect: OpacityMask {
