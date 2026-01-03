@@ -329,6 +329,7 @@ Rectangle {
                         borderColor: "transparent"
                         itemHoverColor: colors.accent
                         iconSize: 16
+                        colors: barRoot.colors
                     }
 
                 }
