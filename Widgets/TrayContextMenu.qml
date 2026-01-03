@@ -1,66 +1,46 @@
 import QtQuick
-import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
 import Qt5Compat.GraphicalEffects
+import qs.Modules.Corners
 
 PanelWindow {
     id: root
 
-    
     property var menuHandle: null
     property real menuX: 0
     property real menuY: 0
-    property bool isOpen: false
-
+    property bool hasCurrent: false
+    
+    property int animLength: 400
+    property var animCurve: [0.05, 0, 0.133, 0.06, 0.166, 0.4, 0.208, 0.82, 0.25, 1, 1, 1]
 
     property var colors: QtObject {
         property color bg: "#1e1e2e"
         property color fg: "#cdd6f4"
-        property color accent: "#cba6f7"   
+        property color accent: "#cba6f7"
         property color muted: "#45475a"
-        property color border: "#313244"   
+        property color border: "#313244"
     }
 
     function open(handle, x, y) {
         menuHandle = handle;
         
-        let width = 240; 
-        let estimatedHeight = 300;
-        
-        
+        let width = 240;
         let safeX = x - (width / 2);
-        
-        
         safeX = Math.max(8, Math.min(safeX, Screen.width - width - 8));
-        let safeY = y; 
 
         menuX = safeX;
-        menuY = safeY-34;
-        
-        visible = true;
-        isOpen = true;
+        menuY = y - 32
+        hasCurrent = true;
     }
 
     function close() {
-        isOpen = false;
-        closeTimer.start();
+        hasCurrent = false;
     }
 
-    Timer {
-        id: closeTimer
-        interval: 250 
-        onTriggered: root.visible = false
-    }
-
-    
     color: "transparent"
-    visible: false
-    
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-
     
     anchors {
         top: true
@@ -68,108 +48,106 @@ PanelWindow {
         left: true
         right: true
     }
-
     
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: wrapper.visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
+    
+    mask: Region {
+        item: wrapper.visible ? wrapper : null
+    }
+
     MouseArea {
         anchors.fill: parent
-        hoverEnabled: true
-        acceptedButtons: Qt.LeftButton | Qt.RightButton
+        enabled: wrapper.visible
         onClicked: root.close()
+    }
+    
+    // Inverse rounded corners at top
+    // Fixed: Scale is now bound to wrapper height. 
+    // They will remain full size (scale 1) until the panel height drops below their size (30px),
+    // creating the effect of "closing with" the panel.
+    RoundCorner {
+        corner: RoundCorner.CornerEnum.TopRight
+        size: 30
+        color: Qt.rgba(root.colors.bg.r, root.colors.bg.g, root.colors.bg.b, 0.95)
+        
+        anchors.top: wrapper.top
+        anchors.right: wrapper.left
+        
+        transformOrigin: Item.TopRight
+        
+        // Scale reduces only when height < 30
+        scale: Math.min(1, wrapper.height / 30)
+        visible: scale > 0
+    }
+    
+    RoundCorner {
+        corner: RoundCorner.CornerEnum.TopLeft
+        size: 30
+        color: Qt.rgba(root.colors.bg.r, root.colors.bg.g, root.colors.bg.b, 0.95)
+        
+        anchors.top: wrapper.top
+        anchors.left: wrapper.right
+        
+        transformOrigin: Item.TopLeft
+        
+        // Scale reduces only when height < 30
+        scale: Math.min(1, wrapper.height / 30)
+        visible: scale > 0
     }
 
     Item {
-        id: menuContainer
+        id: wrapper
         
         x: root.menuX
-        y: root.menuY - 1
+        y: root.menuY
         width: 240
         
-
+        readonly property real contentHeight: menuColumn.implicitHeight + 16
+        
+        visible: height > 0
         clip: true
-        height: root.isOpen ? menuBox.height : 0
         
-        Behavior on height { 
-            NumberAnimation { duration: 300; easing.type: Easing.OutCubic } 
-        }
+        implicitHeight: root.hasCurrent ? contentHeight : 0
         
-        
-        opacity: root.isOpen ? 1.0 : 0.0
-        Behavior on opacity { 
-            NumberAnimation { duration: 250; easing.type: Easing.OutQuad } 
-        }
-
-        Rectangle {
-            id: shadowSource
-            anchors.fill: menuBox
-            anchors.topMargin: 8
-            anchors.margins: 4
-            radius: 12
-            color: "black"
-            visible: false
-        }
-        
-        DropShadow {
-            anchors.fill: menuBox
-            anchors.topMargin: 8
-            source: shadowSource
-            color: Qt.rgba(0, 0, 0, 0.3)
-            radius: 16
-            samples: 24
-            verticalOffset: 2
-            transparentBorder: true
-        }
-
-        
-        Rectangle {
-            id: menuBox
-            width: parent.width
-            height: column.implicitHeight + 16
-            color: "transparent"
-            radius: 0
-            clip: true
-
-            Rectangle {
-                id: menuBackground
-                anchors.fill: parent
-                color: Qt.rgba(root.colors.bg.r, root.colors.bg.g, root.colors.bg.b, 0.95)
-                radius: 14
-                
-                Rectangle {
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 14
-                    color: parent.color
-                }
+        Behavior on implicitHeight {
+            NumberAnimation {
+                duration: root.animLength
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: root.animCurve
             }
+        }
+
+        // Fixed: Menu Background is now sized to the wrapper (parent).
+        // This ensures the bottom rounded corners move up as the wrapper shrinks,
+        // preventing the "square bottom" look during animation.
+        Rectangle {
+            id: menuBg
+            anchors.fill: parent
+            color: Qt.rgba(root.colors.bg.r, root.colors.bg.g, root.colors.bg.b, 0.95)
+            clip: true // Clip the content that sits inside
             
-
-            Rectangle {
-                anchors.fill: parent
-                color: "transparent"
-                border.width: 1
-                border.color: root.colors.border
-                radius: 14
-                
-
-                Rectangle {
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 2
-                    color: Qt.rgba(root.colors.bg.r, root.colors.bg.g, root.colors.bg.b, 0.95)
-                }
-            }
-
+            // Specific corners
+            topLeftRadius: 0
+            topRightRadius: 0
+            bottomLeftRadius: 14
+            bottomRightRadius: 14
+            
             QsMenuOpener {
                 id: opener
                 menu: root.menuHandle
             }
-
-            ColumnLayout {
-                id: column
-                anchors.fill: parent
-                anchors.margins: 8
+            
+            Column {
+                id: menuColumn
+                
+                // Content stays anchored to top, while parent (bg) shrinks from bottom
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.topMargin: 8
+                anchors.leftMargin: 8
+                anchors.rightMargin: 8
                 spacing: 2
 
                 Repeater {
@@ -179,11 +157,11 @@ PanelWindow {
                         id: menuItem
                         
                         property bool isSeparator: modelData.isSeparator
-                        property bool isHovered: hover.containsMouse && !isSeparator
+                        property bool isHovered: itemMouse.containsMouse && !isSeparator
+                        property bool hasChildren: modelData.hasChildren
 
-                        Layout.fillWidth: true
-                        Layout.preferredHeight: isSeparator ? 12 : 36
-
+                        width: menuColumn.width
+                        height: isSeparator ? 12 : 36
 
                         Rectangle {
                             visible: isSeparator
@@ -198,27 +176,11 @@ PanelWindow {
                             visible: !isSeparator
                             anchors.fill: parent
                             radius: 8
-                            
                             color: isHovered ? root.colors.accent : "transparent"
                             opacity: isHovered ? 0.15 : 0
-                            
                             Behavior on opacity { NumberAnimation { duration: 150 } }
-
-                            MouseArea {
-                                id: hover
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: parent.isSeparator ? Qt.ArrowCursor : Qt.PointingHandCursor
-                                onClicked: {
-                                    if (!parent.isSeparator) {
-                                        modelData.triggered();
-                                        root.close();
-                                    }
-                                }
-                            }
                         }
-                        
-                        
+
                         Rectangle {
                             visible: !isSeparator && isHovered
                             width: 3
@@ -230,7 +192,6 @@ PanelWindow {
                             anchors.verticalCenter: parent.verticalCenter
                         }
 
-                        
                         RowLayout {
                             visible: !isSeparator
                             anchors.fill: parent
@@ -238,7 +199,6 @@ PanelWindow {
                             anchors.rightMargin: 12
                             spacing: 12
 
-                
                             Item {
                                 Layout.preferredWidth: 20
                                 Layout.preferredHeight: 20
@@ -250,25 +210,22 @@ PanelWindow {
                                     source: modelData.icon || ""
                                     fillMode: Image.PreserveAspectFit
                                     visible: modelData.icon !== undefined && modelData.icon !== ""
-                                    
                                     layer.enabled: true
                                     layer.effect: ColorOverlay {
                                         color: isHovered ? root.colors.accent : root.colors.muted
                                     }
                                 }
-                                
-                                
+
                                 Text {
                                     anchors.centerIn: parent
                                     visible: !(modelData.icon !== undefined && modelData.icon !== "")
-                                    text: "" // Circle
+                                    text: ""
                                     font.family: "Symbols Nerd Font"
                                     font.pixelSize: 6
                                     color: isHovered ? root.colors.accent : root.colors.muted
                                 }
                             }
 
-                            
                             Text {
                                 text: modelData.text || ""
                                 color: isHovered ? root.colors.fg : Qt.rgba(root.colors.fg.r, root.colors.fg.g, root.colors.fg.b, 0.8)
@@ -279,14 +236,31 @@ PanelWindow {
                                 font.letterSpacing: 0.2
                                 verticalAlignment: Text.AlignVCenter
                             }
-                            
-                        
+
                             Text {
-                                visible: modelData.checkable && modelData.checked
-                                text: ""
+                                visible: (modelData.checkable && modelData.checked) || menuItem.hasChildren
+                                text: menuItem.hasChildren ? "" : ""
                                 font.family: "Symbols Nerd Font"
                                 color: root.colors.accent
                                 font.pixelSize: 12
+                            }
+                        }
+
+                        MouseArea {
+                            id: itemMouse
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: isSeparator ? Qt.ArrowCursor : Qt.PointingHandCursor
+                            
+                            onClicked: {
+                                if (!menuItem.isSeparator) {
+                                    if (modelData.hasChildren) {
+                                        root.menuHandle = modelData;
+                                    } else {
+                                        modelData.triggered();
+                                        root.close();
+                                    }
+                                }
                             }
                         }
                     }
