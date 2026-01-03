@@ -44,6 +44,8 @@ PanelWindow {
     WlrLayershell.keyboardFocus: WlrKeyboardFocus.Exclusive
     WlrLayershell.namespace: "wallpaper-panel"
     WlrLayershell.exclusiveZone: -1
+    
+
 
     // --- State Management ---
     Connections {
@@ -113,6 +115,8 @@ PanelWindow {
             }
         }
         
+        // layer.enabled: true
+        
         // Inverse Corners
         RoundCorner {
             anchors.bottom: parent.bottom
@@ -120,7 +124,6 @@ PanelWindow {
             corner: RoundCorner.CornerEnum.BottomRight
             size: 30
             color: panelBackground.color
-            visible: root.internalOpen
         }
         
         RoundCorner {
@@ -129,28 +132,28 @@ PanelWindow {
             corner: RoundCorner.CornerEnum.BottomLeft
             size: 30
             color: panelBackground.color
-            visible: root.internalOpen
         }
 
-        // --- Upward Shadow ---
-        Rectangle {
-            id: shadowSource
-            anchors.fill: mainPanel
-            anchors.topMargin: 8
-            radius: 20
-            color: "black"
-            visible: false
-        }
-        DropShadow {
-            anchors.fill: mainPanel
-            source: shadowSource
-            horizontalOffset: 0
-            verticalOffset: -8
-            radius: 24
-            samples: 32
-            color: Qt.rgba(0, 0, 0, 0.4)
-            transparentBorder: true
-        }
+        // // --- Upward Shadow ---
+        // Rectangle {
+        //     id: shadowSource
+        //     anchors.fill: mainPanel
+        //     anchors.topMargin: 8
+        //     radius: 20
+        //     color: "black"
+        //     visible: false
+        // }
+        // DropShadow {
+        //     anchors.fill: mainPanel
+        //     source: shadowSource
+        //     horizontalOffset: 0
+        //     verticalOffset: -8
+        //     radius: 24
+        //     samples: 32
+        //     color: Qt.rgba(0, 0, 0, 0.4)
+        //     transparentBorder: true
+        //     cached: true
+        // }
 
         // --- Main Panel ---
         Rectangle {
