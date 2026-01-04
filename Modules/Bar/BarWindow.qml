@@ -1,7 +1,7 @@
 import QtQuick
 import Quickshell
+import qs.Core
 import qs.Modules.Bar
-import qs.Services
 
 Variants {
     id: root

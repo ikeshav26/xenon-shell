@@ -3,7 +3,6 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Shapes
 import qs.Core
-import qs.Services
 
 Item {
     id: root

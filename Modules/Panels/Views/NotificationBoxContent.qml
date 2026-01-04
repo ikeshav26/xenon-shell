@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import qs.Core
 import qs.Modules.Notifications
 import qs.Widgets
 
@@ -33,7 +34,7 @@ ColumnLayout {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "󰂚"
+                    text: Icons.bell
                     font.family: "Symbols Nerd Font"
                     color: theme.bg
                     font.pixelSize: 14

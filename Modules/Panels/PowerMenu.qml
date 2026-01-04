@@ -17,6 +17,37 @@ PanelWindow {
     readonly property int itemHeight: 48
     readonly property int itemSpacing: 4
     readonly property int headerHeight: 40
+    readonly property var buttonsModel: [{
+        "name": "Lock",
+        "icon": Icons.lock,
+        "command": "quickshell ipc -c mannu call lock lock",
+        "shortcut": "L"
+    }, {
+        "name": "Suspend",
+        "icon": Icons.suspend,
+        "command": "systemctl suspend",
+        "shortcut": "S"
+    }, {
+        "name": "Reload",
+        "icon": Icons.reload,
+        "command": "pkill qs && qs -c mannu &",
+        "shortcut": "D"
+    }, {
+        "name": "Reboot",
+        "icon": Icons.reload,
+        "command": "systemctl reboot",
+        "shortcut": "R"
+    }, {
+        "name": "Power Off",
+        "icon": Icons.shutdown,
+        "command": "systemctl poweroff",
+        "shortcut": "P"
+    }, {
+        "name": "Log Out",
+        "icon": Icons.logout,
+        "command": "loginctl terminate-user " + Quickshell.env("USER"),
+        "shortcut": "X"
+    }]
 
     function runCommand(cmd) {
         if (cmd.includes("$USER"))
@@ -75,71 +106,24 @@ PanelWindow {
         focus: true
         Keys.onEscapePressed: globalState.powerMenuOpen = false
         Keys.onUpPressed: {
-            currentIndex = (currentIndex - 1 + buttonsModel.count) % buttonsModel.count;
+            currentIndex = (currentIndex - 1 + buttonsModel.length) % buttonsModel.length;
         }
         Keys.onDownPressed: {
-            currentIndex = (currentIndex + 1) % buttonsModel.count;
+            currentIndex = (currentIndex + 1) % buttonsModel.length;
         }
         Keys.onReturnPressed: {
-            runCommand(buttonsModel.get(currentIndex).command);
+            runCommand(buttonsModel[currentIndex].command);
         }
         Keys.onPressed: (event) => {
             const key = event.text.toUpperCase();
-            for (let i = 0; i < buttonsModel.count; i++) {
-                if (buttonsModel.get(i).shortcut === key) {
-                    runCommand(buttonsModel.get(i).command);
+            for (let i = 0; i < buttonsModel.length; i++) {
+                if (buttonsModel[i].shortcut === key) {
+                    runCommand(buttonsModel[i].command);
                     event.accepted = true;
                     return ;
                 }
             }
         }
-    }
-
-    ListModel {
-        id: buttonsModel
-
-        ListElement {
-            name: "Lock"
-            icon: "󰌾"
-            command: "quickshell ipc -c mannu call lock lock"
-            shortcut: "L"
-        }
-
-        ListElement {
-            name: "Suspend"
-            icon: "󰒲"
-            command: "systemctl suspend"
-            shortcut: "S"
-        }
-
-        ListElement {
-            name: "Reload"
-            icon: "󰑓"
-            command: "pkill qs && qs -c mannu &"
-            shortcut: "D"
-        }
-
-        ListElement {
-            name: "Reboot"
-            icon: "󰑓"
-            command: "systemctl reboot"
-            shortcut: "R"
-        }
-
-        ListElement {
-            name: "Power Off"
-            icon: "󰐥"
-            command: "systemctl poweroff"
-            shortcut: "P"
-        }
-
-        ListElement {
-            name: "Log Out"
-            icon: "󰍃"
-            command: "loginctl terminate-user $USER"
-            shortcut: "X"
-        }
-
     }
 
     MouseArea {
@@ -150,7 +134,7 @@ PanelWindow {
     Rectangle {
         id: panel
 
-        property int contentHeight: headerHeight + buttonsModel.count * (itemHeight + itemSpacing) + 24
+        property int contentHeight: headerHeight + buttonsModel.length * (itemHeight + itemSpacing) + 24
 
         width: root.boxWidth
         height: contentHeight
@@ -211,6 +195,9 @@ PanelWindow {
                 model: buttonsModel
 
                 Item {
+                    required property var modelData
+                    required property int index
+
                     width: buttonColumn.width
                     height: root.itemHeight
 
@@ -222,7 +209,7 @@ PanelWindow {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: model.icon
+                            text: parent.parent.modelData.icon
                             font.pixelSize: 18
                             font.family: "Symbols Nerd Font"
                             color: root.currentIndex === index ? root.colors.bg : root.colors.text
@@ -246,7 +233,7 @@ PanelWindow {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: model.name
+                            text: parent.parent.modelData.name
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: root.currentIndex === index ? root.colors.bg : root.colors.text
@@ -267,7 +254,7 @@ PanelWindow {
 
                         Text {
                             anchors.verticalCenter: parent.verticalCenter
-                            text: model.shortcut
+                            text: parent.parent.modelData.shortcut
                             font.pixelSize: 11
                             font.weight: Font.Medium
                             color: root.currentIndex === index ? root.colors.bg : root.colors.text
@@ -295,7 +282,7 @@ PanelWindow {
                         anchors.fill: parent
                         hoverEnabled: true
                         onEntered: root.currentIndex = index
-                        onClicked: root.runCommand(model.command)
+                        onClicked: root.runCommand(parent.modelData.command)
                         cursorShape: Qt.PointingHandCursor
                     }
 

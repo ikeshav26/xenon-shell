@@ -57,6 +57,7 @@ Singleton {
     onHideWorkspaceNumbersChanged: {
         if (!_loading)
             saveTimer.restart();
+
     }
     onFontFamilyChanged: {
         if (!_loading)
@@ -230,6 +231,7 @@ Singleton {
 
     Timer {
         id: saveTimer
+
         interval: 1000
         repeat: false
         onTriggered: root.save()

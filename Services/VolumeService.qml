@@ -1,8 +1,8 @@
 import QtQuick
 import Quickshell
 import Quickshell.Services.Pipewire
-import Quickshell.Io
 
+import qs.Core
 Item {
     id: root
 
@@ -37,12 +37,12 @@ Item {
     readonly property int level: Math.round(volume * 100)
 
     readonly property string icon: {
-        if (muted) return "󰖁";
+        if (muted) return Icons.volumeMuted;
         const v = volume;
-        if (v <= 0) return "󰝟";
-        if (v < 0.33) return "󰕿";
-        if (v < 0.66) return "󰖀";
-        return "󰕾";
+        if (v <= 0) return Icons.volumeZero;
+        if (v < 0.33) return Icons.volumeLow;
+        if (v < 0.66) return Icons.volumeMedium;
+        return Icons.volumeHigh;
     }
 
     function setVolume(v) {

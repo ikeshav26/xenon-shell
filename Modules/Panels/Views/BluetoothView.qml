@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import qs.Core
 import qs.Services
 import qs.Widgets
 
@@ -32,7 +33,7 @@ Control {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "󰁮"
+                    text: Icons.back
                     font.family: "Symbols Nerd Font"
                     font.pixelSize: 18
                     color: theme.text

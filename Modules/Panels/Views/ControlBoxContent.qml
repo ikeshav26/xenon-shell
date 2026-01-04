@@ -3,6 +3,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import qs.Core
 import qs.Modules.Notifications
 import qs.Services
 import qs.Widgets
@@ -43,12 +44,13 @@ ColumnLayout {
                 onStatusChanged: {
                     if (status === Image.Error)
                         source = "../../Assets/arch.svg";
+
                 }
             }
 
             Text {
                 anchors.centerIn: parent
-                text: "󰣇"
+                text: Icons.arch
                 font.pixelSize: 24
                 font.family: "Symbols Nerd Font"
                 color: theme.bg
@@ -100,7 +102,7 @@ ColumnLayout {
 
             Text {
                 anchors.centerIn: parent
-                text: "󰒓" // Settings icon
+                text: Icons.settings // Settings icon
                 font.pixelSize: 16
                 font.family: "Symbols Nerd Font"
                 color: theme.text
@@ -124,7 +126,7 @@ ColumnLayout {
 
             Text {
                 anchors.centerIn: parent
-                text: "󰐥"
+                text: Icons.shutdown
                 font.pixelSize: 16
                 font.family: "Symbols Nerd Font"
                 color: theme.urgent
@@ -151,7 +153,7 @@ ColumnLayout {
             implicitHeight: 64
             label: "WiFi"
             sublabel: NetworkService.wifiEnabled ? (NetworkService.active ? NetworkService.active.ssid : "On") : "Off"
-            icon: "󰖩"
+            icon: Icons.networkWifiConnected
             active: NetworkService.wifiEnabled
             showChevron: true
             theme: root.theme
@@ -175,7 +177,7 @@ ColumnLayout {
             implicitHeight: 64
             label: "Bluetooth"
             sublabel: bluetoothService.enabled ? (bluetoothService.connectedDevices && bluetoothService.connectedDevices.length > 0 ? bluetoothService.connectedDevices[0].name : "On") : "Off"
-            icon: "󰂯"
+            icon: Icons.bluetooth
             active: bluetoothService.enabled
             showChevron: true
             theme: root.theme
@@ -199,7 +201,7 @@ ColumnLayout {
             implicitHeight: 56
             label: "Airplane"
             sublabel: "Off"
-            icon: "󰀝"
+            icon: Icons.airplane
             active: false
             showChevron: false
             theme: root.theme
@@ -210,7 +212,7 @@ ColumnLayout {
             implicitHeight: 56
             label: "DND"
             sublabel: "Off"
-            icon: "󰂛"
+            icon: Icons.dnd
             active: false
             showChevron: false
             theme: root.theme
@@ -225,7 +227,7 @@ ColumnLayout {
 
         Views.SliderControl {
             label: "Volume"
-            icon: "󰕾"
+            icon: Icons.volumeHigh
             value: volumeService.volume
             theme: root.theme
             onChangeRequested: (v) => {
@@ -235,7 +237,7 @@ ColumnLayout {
 
         Views.SliderControl {
             label: "Brightness"
-            icon: "󰃠"
+            icon: Icons.brightness
             value: BrightnessService.brightness
             theme: root.theme
             onChangeRequested: (v) => {

@@ -14,90 +14,38 @@ Item {
     property string shellName: "Unknown"
     property string wmName: "Quickshell"
 
-    Process {
-        command: ["whoami"]
-        running: true
+    Component.onCompleted: Ipc.fetchSystemInfo()
 
-        stdout: SplitParser {
-            onRead: (data) => {
-                if (data) {
-                    Logger.d("SystemInfo", "User fetched -> " + data);
-                    root.userName = data.trim();
-                }
-            }
+    Connections {
+        function onUserNameFetched(name) {
+            root.userName = name;
         }
 
-    }
-
-    Process {
-        command: ["sh", "-c", "grep PRETTY_NAME /etc/os-release | cut -d'=' -f2 | tr -d '\"'"]
-        running: true
-
-        stdout: SplitParser {
-            onRead: (data) => {
-                if (data) {
-                    Logger.d("SystemInfo", "OS fetched -> " + data);
-                    root.osName = data.trim();
-                }
-            }
+        function onOsNameFetched(name) {
+            root.osName = name;
         }
 
-    }
-
-    Process {
-        command: ["cat", "/proc/sys/kernel/hostname"]
-        running: true
-
-        stdout: SplitParser {
-            onRead: (data) => {
-                if (data && data.trim() !== "")
-                    root.hostName = data.trim();
-
-            }
+        function onHostNameFetched(name) {
+            root.hostName = name;
         }
 
-    }
-
-    Process {
-        command: ["uname", "-r"]
-        running: true
-
-        stdout: SplitParser {
-            onRead: (data) => {
-                if (data)
-                    root.kernelVersion = data.trim();
-
-            }
+        function onKernelVersionFetched(name) {
+            root.kernelVersion = name;
         }
 
-    }
-
-    Process {
-        command: ["sh", "-c", "echo $SHELL | awk -F/ '{print $NF}'"]
-        running: true
-
-        stdout: SplitParser {
-            onRead: (data) => {
-                if (data)
-                    root.shellName = data.trim();
-
-            }
+        function onShellNameFetched(name) {
+            root.shellName = name;
         }
 
-    }
-
-    Process {
-        command: ["sh", "-c", "echo $XDG_CURRENT_DESKTOP"]
-        running: true
-
-        stdout: SplitParser {
-            onRead: (data) => {
-                if (data && data.trim() !== "")
-                    root.wmName = data.trim();
-
-            }
+        function onWmNameFetched(name) {
+            root.wmName = name;
         }
 
+        function onUptimeFetched(time) {
+            root.uptime = time;
+        }
+
+        target: Ipc
     }
 
     Timer {
@@ -105,22 +53,7 @@ Item {
         running: true
         repeat: true
         triggeredOnStart: true
-        onTriggered: uptimeProc.running = true
-    }
-
-    Process {
-        id: uptimeProc
-
-        command: ["uptime", "-p"]
-
-        stdout: SplitParser {
-            onRead: (data) => {
-                if (data)
-                    root.uptime = data.replace("up ", "").trim();
-
-            }
-        }
-
+        onTriggered: Ipc.fetchUptime()
     }
 
 }

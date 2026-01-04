@@ -202,16 +202,16 @@ PanelWindow {
 
             Repeater {
                 model: [{
-                    "icon": "󰣇",
+                    "icon": Icons.arch,
                     "index": 0
                 }, {
-                    "icon": "󰝚",
+                    "icon": Icons.music,
                     "index": 1
                 }, {
-                    "icon": "󰖐",
+                    "icon": Icons.weather,
                     "index": 2
                 }, {
-                    "icon": "󰍛",
+                    "icon": Icons.system,
                     "index": 3
                 }]
 

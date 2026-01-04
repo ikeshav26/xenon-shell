@@ -1,4 +1,5 @@
 import QtQuick
+import qs.Core
 pragma Singleton
 
 QtObject {
@@ -6,40 +7,40 @@ QtObject {
 
     function getIcon(percent, charging, isReady) {
         if (!isReady)
-            return "󰂎";
+            return Icons.batteryUnknown;
 
         if (charging)
-            return "󰂄";
+            return Icons.batteryCharging;
 
         const p = Math.round(percent);
         if (p >= 90)
-            return "󰁹";
+            return Icons.battery100;
 
         if (p >= 80)
-            return "󰂂";
+            return Icons.battery90;
 
         if (p >= 70)
-            return "󰂁";
+            return Icons.battery80;
 
         if (p >= 60)
-            return "󰂀";
+            return Icons.battery70;
 
         if (p >= 50)
-            return "󰁿";
+            return Icons.battery60;
 
         if (p >= 40)
-            return "󰁾";
+            return Icons.battery50;
 
         if (p >= 30)
-            return "󰁽";
+            return Icons.battery40;
 
         if (p >= 20)
-            return "󰁼";
+            return Icons.battery30;
 
         if (p >= 10)
-            return "󰁻";
+            return Icons.battery20;
 
-        return "󰁺";
+        return Icons.battery10;
     }
 
     function getStateColor(percent, charging, full) {

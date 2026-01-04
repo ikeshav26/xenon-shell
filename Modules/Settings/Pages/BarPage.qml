@@ -44,6 +44,7 @@ ColumnLayout {
         onActiveChanged: {
             if (Config.hideWorkspaceNumbers !== active)
                 Config.hideWorkspaceNumbers = active;
+
         }
     }
 

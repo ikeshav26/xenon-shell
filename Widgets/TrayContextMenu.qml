@@ -1,8 +1,8 @@
+import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import Qt5Compat.GraphicalEffects
 import qs.Modules.Corners
 
 PanelWindow {
@@ -12,11 +12,11 @@ PanelWindow {
     property real menuX: 0
     property real menuY: 0
     property bool hasCurrent: false
-    
     property int animLength: 400
     property var animCurve: [0.05, 0, 0.133, 0.06, 0.166, 0.4, 0.208, 0.82, 0.25, 1, 1, 1]
+    property var colors
 
-    property var colors: QtObject {
+    colors: QtObject {
         property color bg: "#1e1e2e"
         property color fg: "#cdd6f4"
         property color accent: "#cba6f7"
@@ -26,13 +26,11 @@ PanelWindow {
 
     function open(handle, x, y) {
         menuHandle = handle;
-        
         let width = 240;
         let safeX = x - (width / 2);
         safeX = Math.max(8, Math.min(safeX, Screen.width - width - 8));
-
         menuX = safeX;
-        menuY = y - 32
+        menuY = y - 32;
         hasCurrent = true;
     }
 
@@ -41,19 +39,13 @@ PanelWindow {
     }
 
     color: "transparent"
-    
+    WlrLayershell.layer: WlrLayer.Overlay
+    WlrLayershell.keyboardFocus: wrapper.visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
     anchors {
         top: true
         bottom: true
         left: true
         right: true
-    }
-    
-    WlrLayershell.layer: WlrLayer.Overlay
-    WlrLayershell.keyboardFocus: wrapper.visible ? WlrKeyboardFocus.Exclusive : WlrKeyboardFocus.None
-    
-    mask: Region {
-        item: wrapper.visible ? wrapper : null
     }
 
     MouseArea {
@@ -61,79 +53,64 @@ PanelWindow {
         enabled: wrapper.visible
         onClicked: root.close()
     }
-    
+
     RoundCorner {
         corner: RoundCorner.CornerEnum.TopRight
         size: 30
         color: Qt.rgba(root.colors.bg.r, root.colors.bg.g, root.colors.bg.b, 0.95)
-        
         anchors.top: wrapper.top
         anchors.right: wrapper.left
-        
         transformOrigin: Item.TopRight
-        
         scale: Math.min(1, wrapper.height / 30)
         visible: scale > 0
     }
-    
+
     RoundCorner {
         corner: RoundCorner.CornerEnum.TopLeft
         size: 30
         color: Qt.rgba(root.colors.bg.r, root.colors.bg.g, root.colors.bg.b, 0.95)
-        
         anchors.top: wrapper.top
         anchors.left: wrapper.right
-        
         transformOrigin: Item.TopLeft
-        
         scale: Math.min(1, wrapper.height / 30)
         visible: scale > 0
     }
 
     Item {
         id: wrapper
-        
+
+        readonly property real contentHeight: menuColumn.implicitHeight + 16
+
         x: root.menuX
         y: root.menuY
         width: 240
-        
-        readonly property real contentHeight: menuColumn.implicitHeight + 16
-        
         visible: height > 0
         clip: true
-        
         implicitHeight: root.hasCurrent ? contentHeight : 0
-        
-        Behavior on implicitHeight {
-            NumberAnimation {
-                duration: root.animLength
-                easing.type: Easing.BezierSpline
-                easing.bezierCurve: root.animCurve
-            }
-        }
 
         Rectangle {
             id: menuBg
+
             anchors.fill: parent
             color: Qt.rgba(root.colors.bg.r, root.colors.bg.g, root.colors.bg.b, 0.95)
             clip: true // Clip the content that sits inside
-            
             topLeftRadius: 0
             topRightRadius: 0
             bottomLeftRadius: 14
             bottomRightRadius: 14
-            
+
             QsMenuOpener {
                 id: opener
+
                 menu: root.menuHandle
             }
-            
+
             Rectangle {
                 id: highlight
-                
+
                 property real targetY: 0
                 property bool active: false
-                
+
                 x: 8
                 y: menuColumn.y + targetY
                 width: parent.width - 16
@@ -141,23 +118,28 @@ PanelWindow {
                 radius: 8
                 color: root.colors.accent
                 opacity: active ? 0.15 : 0
-                
+
                 Behavior on y {
                     NumberAnimation {
                         duration: 200
                         easing.type: Easing.OutBack
                         easing.overshoot: 0.8
                     }
+
                 }
-                
+
                 Behavior on opacity {
-                    NumberAnimation { duration: 150 }
+                    NumberAnimation {
+                        duration: 150
+                    }
+
                 }
+
             }
 
             Column {
                 id: menuColumn
-                
+
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
@@ -171,7 +153,7 @@ PanelWindow {
 
                     delegate: Item {
                         id: menuItem
-                        
+
                         property bool isSeparator: modelData.isSeparator
                         property bool hasChildren: modelData.hasChildren
 
@@ -187,7 +169,6 @@ PanelWindow {
                             opacity: 0.5
                         }
 
-                        // Side marker
                         Rectangle {
                             visible: !isSeparator && highlight.active && highlight.targetY === menuItem.y
                             width: 3
@@ -209,7 +190,7 @@ PanelWindow {
                             Item {
                                 Layout.preferredWidth: 20
                                 Layout.preferredHeight: 20
-                                
+
                                 Image {
                                     anchors.centerIn: parent
                                     width: 16
@@ -218,9 +199,11 @@ PanelWindow {
                                     fillMode: Image.PreserveAspectFit
                                     visible: modelData.icon !== undefined && modelData.icon !== ""
                                     layer.enabled: true
+
                                     layer.effect: ColorOverlay {
                                         color: (highlight.active && highlight.targetY === menuItem.y) ? root.colors.accent : root.colors.muted
                                     }
+
                                 }
 
                                 Text {
@@ -231,6 +214,7 @@ PanelWindow {
                                     font.pixelSize: 6
                                     color: (highlight.active && highlight.targetY === menuItem.y) ? root.colors.accent : root.colors.muted
                                 }
+
                             }
 
                             Text {
@@ -251,26 +235,22 @@ PanelWindow {
                                 color: root.colors.accent
                                 font.pixelSize: 12
                             }
+
                         }
 
                         MouseArea {
                             id: itemMouse
+
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: isSeparator ? Qt.ArrowCursor : Qt.PointingHandCursor
-                            
                             onEntered: {
                                 if (!menuItem.isSeparator) {
-                                    highlight.targetY = menuItem.y
-                                    highlight.active = true
+                                    highlight.targetY = menuItem.y;
+                                    highlight.active = true;
                                 } else {
-                                    // Optional: Don't hide highlight implies it skips over separators or stays
-                                    // replicating launcher behavior usually means it stays active on last item or moves
-                                    // Simpler: keep active but don't move? Or move?
-                                    // Let's just ignore separators so it stays on last item
                                 }
                             }
-
                             onClicked: {
                                 if (!menuItem.isSeparator) {
                                     if (modelData.hasChildren) {
@@ -282,9 +262,28 @@ PanelWindow {
                                 }
                             }
                         }
+
                     }
+
                 }
+
             }
+
         }
+
+        Behavior on implicitHeight {
+            NumberAnimation {
+                duration: root.animLength
+                easing.type: Easing.BezierSpline
+                easing.bezierCurve: root.animCurve
+            }
+
+        }
+
     }
+
+    mask: Region {
+        item: wrapper.visible ? wrapper : null
+    }
+
 }

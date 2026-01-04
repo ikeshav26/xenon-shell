@@ -1,4 +1,5 @@
 import Quickshell
+import qs.Core
 import qs.Modules.Background
 import qs.Modules.Bar
 import qs.Modules.Corners

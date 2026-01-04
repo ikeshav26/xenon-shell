@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
+import qs.Core
 import qs.Services
 import qs.Widgets
 
@@ -31,7 +32,7 @@ Control {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "󰁮" // Back arrow
+                    text: Icons.back // Back arrow
                     font.family: "Symbols Nerd Font"
                     font.pixelSize: 18
                     color: theme.text
@@ -119,7 +120,7 @@ Control {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "󰖩"
+                        text: Icons.networkWifiConnected
                         font.family: "Symbols Nerd Font"
                         font.pixelSize: 20
                         color: theme.accentActive
@@ -152,7 +153,7 @@ Control {
                 }
 
                 Text {
-                    text: "" // Checkmark
+                    text: Icons.check // Checkmark
                     font.family: "Symbols Nerd Font"
                     font.pixelSize: 16
                     color: theme.accentActive
@@ -211,7 +212,7 @@ Control {
                     visible: parent.visible
 
                     Text {
-                        text: "󰖩"
+                        text: Icons.networkWifiConnected
                         font.family: "Symbols Nerd Font"
                         font.pixelSize: 18
                         color: theme.subtext
@@ -226,7 +227,7 @@ Control {
                     }
 
                     Text {
-                        text: modelData.isSecure ? "󰌾" : ""
+                        text: modelData.isSecure ? Icons.lock : ""
                         font.family: "Symbols Nerd Font"
                         font.pixelSize: 14
                         color: theme.muted

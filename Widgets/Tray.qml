@@ -12,7 +12,7 @@ RowLayout {
     property var pinnedApps: []
     property var blacklist: []
     property bool hidePassive: false
-    property var colors: null  
+    property var colors: null
     property var visibleItems: {
         var items = SystemTray.items.values || [];
         return items.filter((item) => {
@@ -106,7 +106,6 @@ RowLayout {
 
     TrayContextMenu {
         id: contextMenu
-
 
         colors: trayRoot.colors
     }
