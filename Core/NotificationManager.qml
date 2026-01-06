@@ -40,6 +40,7 @@ Item {
         Logger.d("NotifMan", "Removing notification with ID:", notifId);
         for (var i = 0; i < activeNotifications.count; i++) {
             if (activeNotifications.get(i).id === notifId) {
+                Logger.d("NotifMan", "Removing from activeNotifications at index", i)
                 activeNotifications.remove(i);
                 break;
             }
@@ -47,7 +48,7 @@ Item {
         for (var i = 0; i < notifications.count; i++) {
             var item = notifications.get(i);
             if (item.id === notifId) {
-                Logger.d("NotifMan", "  Found! Dismissing and removing...");
+                Logger.d("NotifMan", "Found in notifications list. Dismissing and removing at index", i);
                 if (item.ref) {
                     try {
                         item.ref.dismiss();
@@ -59,7 +60,7 @@ Item {
                 return ;
             }
         }
-        Logger.d("NotifMan", "  Not found!");
+        Logger.d("NotifMan", "  Not found in notifications list!");
     }
 
     function removeSilent(notifId) {
@@ -88,6 +89,42 @@ Item {
             if (notifications.get(i).ref === notificationRef) {
                 notifications.remove(i);
                 break;
+            }
+        }
+    }
+
+    function activate(notifId) {
+        Logger.d("NotifMan", "Activating notification with ID:", notifId);
+        for (var i = 0; i < notifications.count; i++) {
+            var item = notifications.get(i);
+            if (item.id === notifId) {
+                 if (item.ref) {
+                    try {
+                        item.ref.invoke("default");
+                        root.removeById(notifId);
+                    } catch (e) {
+                         Logger.w("NotifMan", "Failed to activate: " + e);
+                    }
+                 }
+                 return;
+            }
+        }
+    }
+
+    function invokeAction(notifId, actionId) {
+        Logger.d("NotifMan", "Invoking action:", actionId, "for ID:", notifId);
+        for (var i = 0; i < notifications.count; i++) {
+            var item = notifications.get(i);
+            if (item.id === notifId) {
+                 if (item.ref) {
+                    try {
+                        item.ref.invoke(actionId);
+                        if (actionId !== "default") root.removeById(notifId); // usually actions dismiss too
+                    } catch (e) {
+                         Logger.w("NotifMan", "Failed to invoke action: " + e);
+                    }
+                 }
+                 return;
             }
         }
     }
@@ -125,6 +162,7 @@ Item {
                 "appIcon": notification.appIcon,
                 "image": notification.image,
                 "urgency": notification.urgency,
+                "actions": notification.actions,
                 "time": Qt.formatTime(new Date(), "hh:mm"),
                 "expireTime": Date.now() + 5000
             };

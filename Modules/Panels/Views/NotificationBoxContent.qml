@@ -23,24 +23,9 @@ ColumnLayout {
 
         RowLayout {
             anchors.fill: parent
-            anchors.margins: 4
+            anchors.leftMargin: 16
+            anchors.rightMargin: 16
             spacing: 8
-
-            Rectangle {
-                width: 24
-                height: 24
-                radius: 8
-                color: theme.accentActive
-
-                Text {
-                    anchors.centerIn: parent
-                    text: Icons.bell
-                    font.family: "Symbols Nerd Font"
-                    color: theme.bg
-                    font.pixelSize: 14
-                }
-
-            }
 
             Text {
                 text: "Notifications"
@@ -49,23 +34,52 @@ ColumnLayout {
                 font.bold: true
             }
 
+            Rectangle {
+                width: 20
+                height: 20
+                radius: 10
+                color: theme.surface
+                border.width: 1
+                border.color: theme.border
+                visible: root.notifManager.notifications.count > 0
+
+                Text {
+                    anchors.centerIn: parent
+                    text: root.notifManager.notifications.count
+                    color: theme.subtext
+                    font.pixelSize: 10
+                    font.bold: true
+                }
+            }
+
             Item {
                 Layout.fillWidth: true
             }
 
-            Text {
-                text: "Clear All"
-                color: root.notifManager.notifications.count > 0 ? theme.urgent : theme.muted
-                font.pixelSize: 11
-                font.bold: true
+            Rectangle {
+                width: 28
+                height: 28
+                radius: 8
+                color: clearMouse.containsMouse ? theme.urgent : "transparent"
                 visible: root.notifManager.notifications.count > 0
 
+                Text {
+                    anchors.centerIn: parent
+                    text: "󰃤" // Trash icon
+                    font.family: "Symbols Nerd Font"
+                    font.pixelSize: 14
+                    color: clearMouse.containsMouse ? theme.bg : theme.subtext
+                }
+
                 MouseArea {
+                    id: clearMouse
                     anchors.fill: parent
+                    hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: root.notifManager.clearHistory()
                 }
 
+                Behavior on color { ColorAnimation { duration: 150 } }
             }
 
         }
@@ -87,26 +101,57 @@ ColumnLayout {
         Layout.preferredHeight: Math.min(contentHeight > 0 ? contentHeight : 110, 300)
         clip: true
         spacing: 10
+        add: Transition {
+            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 200 }
+            NumberAnimation { property: "y"; from: -20; duration: 200; easing.type: Easing.OutQuad }
+        }
+
+        remove: Transition {
+            NumberAnimation { property: "opacity"; to: 0; duration: 200 }
+            NumberAnimation { property: "x"; to: 300; duration: 200; easing.type: Easing.InQuad }
+        }
+
+        displaced: Transition {
+            NumberAnimation { property: "y"; duration: 200; easing.type: Easing.OutQuad }
+        }
+
         model: root.notifManager.notifications
 
-        Text {
+        Column {
             anchors.centerIn: parent
             visible: parent.count === 0
-            text: "No new notifications"
-            color: theme.muted
-            font.pixelSize: 12
-            font.italic: true
+            spacing: 8
+            
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "󰂛" // Bell slash
+                font.family: "Symbols Nerd Font"
+                font.pixelSize: 32
+                color: theme.disabled || "#4C4F5A"
+            }
+
+            Text {
+                anchors.horizontalCenter: parent.horizontalCenter
+                text: "No new notifications"
+                color: theme.muted
+                font.pixelSize: 12
+            }
         }
 
         delegate: NotificationItem {
-            width: ListView.view.width - 4
+            width: ListView.view.width
             notifId: model.id
             summary: model.summary || ""
             body: model.body || ""
             image: model.image || ""
             appIcon: model.appIcon || ""
+            appName: model.appName || ""
+            time: model.time || ""
+            actions: model.actions || []
             theme: root.theme
             onRemoveRequested: root.notifManager.removeById(notifId)
+            onClicked: root.notifManager.activate(notifId)
+            onActionClicked: (actionId) => root.notifManager.invokeAction(notifId, actionId)
         }
 
     }
