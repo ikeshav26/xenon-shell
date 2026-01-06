@@ -1,5 +1,5 @@
-pragma Singleton
 import QtQuick
+pragma Singleton
 
 QtObject {
     readonly property string arch: Qt.resolvedUrl("../Assets/arch.svg")

@@ -33,6 +33,7 @@ Item {
 
         Rectangle {
             id: playerSelector
+
             anchors.top: parent.top
             anchors.horizontalCenter: parent.horizontalCenter
             anchors.topMargin: 12
@@ -44,22 +45,9 @@ Item {
             color: Qt.rgba(1, 1, 1, 0.2)
             scale: 1
 
-            Behavior on width {
-                NumberAnimation {
-                    duration: 200
-                    easing.type: Easing.OutCubic
-                }
-            }
-
-            Behavior on scale {
-                NumberAnimation {
-                    duration: 100
-                    easing.type: Easing.OutCubic
-                }
-            }
-
             Text {
                 id: playerNameLabel
+
                 anchors.centerIn: parent
                 text: MprisService.currentPlayerName
                 font.pixelSize: 11
@@ -71,7 +59,9 @@ Item {
                     NumberAnimation {
                         duration: 150
                     }
+
                 }
+
             }
 
             MouseArea {
@@ -82,10 +72,28 @@ Item {
                 onReleased: playerSelector.scale = 1
                 onClicked: MprisService.selectNextPlayer()
             }
+
+            Behavior on width {
+                NumberAnimation {
+                    duration: 200
+                    easing.type: Easing.OutCubic
+                }
+
+            }
+
+            Behavior on scale {
+                NumberAnimation {
+                    duration: 100
+                    easing.type: Easing.OutCubic
+                }
+
+            }
+
         }
 
         Image {
             id: albumArt
+
             anchors.fill: parent
             source: MprisService.artUrl
             fillMode: Image.PreserveAspectCrop
@@ -96,7 +104,9 @@ Item {
                     duration: 400
                     easing.type: Easing.InOutQuad
                 }
+
             }
+
         }
 
         LinearGradient {
@@ -149,6 +159,7 @@ Item {
 
                 Repeater {
                     id: visualizerRepeater
+
                     model: 32
 
                     Rectangle {
@@ -157,6 +168,7 @@ Item {
                             var vals = CavaService.values;
                             if (!vals || vals.length === 0 || index >= vals.length)
                                 return 0;
+
                             return vals[index] || 0;
                         }
 
@@ -171,10 +183,15 @@ Item {
                             NumberAnimation {
                                 duration: 60
                             }
+
                         }
+
                     }
+
                 }
+
             }
+
         }
 
         ColumnLayout {
@@ -349,7 +366,9 @@ Item {
                                     duration: 200
                                     easing.type: Easing.OutCubic
                                 }
+
                             }
+
                         }
 
                     }
@@ -374,7 +393,9 @@ Item {
                                 duration: 200
                                 easing.type: Easing.OutCubic
                             }
+
                         }
+
                     }
 
                     Timer {

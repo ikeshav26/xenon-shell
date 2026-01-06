@@ -1,15 +1,24 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
+import Quickshell.Services.UPower
 import qs.Core
+import qs.Services
 import qs.Widgets
 
 Rectangle {
     id: root
 
     required property var colors
-    property string fontFamily: "Inter" // Fallback if not passed, but Bar passes it usually? Bar.qml didn't pass fontFamily/fontSize to PowerButton previously. I need to check Bar.qml if I can pass them.
-    property int fontSize: 12
+    required property string fontFamily
+    required property int fontSize
+    property var battery: UPower.displayDevice
+    property real batteryPercent: battery && battery.percentage !== undefined ? battery.percentage * 100 : 0
+    property bool batteryCharging: battery && battery.state === UPowerDeviceState.Charging
+    property bool batteryFull: battery && battery.state === UPowerDeviceState.FullyCharged
+    property bool batteryReady: battery && battery.ready && battery.percentage !== undefined && battery.isPresent
 
+    visible: batteryReady
     Layout.preferredHeight: 30
     Layout.alignment: Qt.AlignVCenter
     implicitWidth: innerLayout.implicitWidth + 8
@@ -48,10 +57,10 @@ Rectangle {
             clip: true
 
             Text {
-                id: pwrText
+                id: batteryText
 
                 anchors.verticalCenter: parent.verticalCenter
-                text: "Power"
+                text: Math.round(root.batteryPercent) + "%"
                 color: root.colors.fg
                 font.pixelSize: root.fontSize
                 font.family: root.fontFamily
@@ -61,8 +70,8 @@ Rectangle {
             TextMetrics {
                 id: textMetrics
 
-                font: pwrText.font
-                text: pwrText.text
+                font: batteryText.font
+                text: batteryText.text
             }
 
             Behavior on Layout.preferredWidth {
@@ -92,12 +101,12 @@ Rectangle {
             Layout.preferredWidth: 24
             Layout.preferredHeight: 24
             radius: 12
-            color: Qt.rgba(root.colors.red.r, root.colors.red.g, root.colors.red.b, 0.2)
+            color: BatteryService.getStateColor(root.batteryPercent, root.batteryCharging, root.batteryFull)
 
             Icon {
                 anchors.centerIn: parent
-                icon: Icons.power
-                color: root.colors.red
+                icon: BatteryService.getIcon(root.batteryPercent, root.batteryCharging, root.batteryReady)
+                color: root.colors.bg
                 font.pixelSize: root.fontSize
             }
 
@@ -107,12 +116,6 @@ Rectangle {
             Layout.preferredWidth: 4
         }
 
-    }
-
-    MouseArea {
-        anchors.fill: parent
-        cursorShape: Qt.PointingHandCursor
-        onClicked: Ipc.togglePowerMenu()
     }
 
 }

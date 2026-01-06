@@ -86,18 +86,37 @@ Rectangle {
             visible: SystemTray.items.values.length > 0
         }
 
-        SystemIndicators {
-            colors: barRoot.colors
-            fontFamily: barRoot.fontFamily
-            fontSize: barRoot.fontSize
-            globalState: barRoot.globalState
-            networkService: barRoot.networkService
-            volumeService: barRoot.volumeService
-            volumeLevel: barRoot.volumeLevel
-        }
+        RowLayout {
+            spacing: 4
 
-        PowerButton {
-            colors: barRoot.colors
+            NetworkPill {
+                colors: barRoot.colors
+                fontFamily: barRoot.fontFamily
+                fontSize: barRoot.fontSize
+                globalState: barRoot.globalState
+                networkService: barRoot.networkService
+            }
+
+            VolumePill {
+                colors: barRoot.colors
+                fontFamily: barRoot.fontFamily
+                fontSize: barRoot.fontSize
+                volumeLevel: barRoot.volumeLevel
+                volumeService: barRoot.volumeService
+            }
+
+            BatteryPill {
+                colors: barRoot.colors
+                fontFamily: barRoot.fontFamily
+                fontSize: barRoot.fontSize
+            }
+
+            PowerButton {
+                colors: barRoot.colors
+                fontFamily: barRoot.fontFamily
+                fontSize: barRoot.fontSize
+            }
+
         }
 
     }

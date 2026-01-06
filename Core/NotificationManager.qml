@@ -10,6 +10,8 @@ Item {
     property bool popupVisible: false
     property int notificationCounter: 0
     property ListModel activeNotifications
+    property bool ready: false
+    property var globalState: null // Injected global state
 
     function closePopup() {
         popupVisible = false;
@@ -90,10 +92,6 @@ Item {
         }
     }
 
-    property bool ready: false
-
-    property var globalState: null // Injected global state
-
     Timer {
         interval: 3000
         running: true
@@ -101,11 +99,12 @@ Item {
     }
 
     Connections {
-        target: root.globalState
         function onIsLockedChanged() {
             root.activeNotifications.clear();
             root.popupVisible = false;
         }
+
+        target: root.globalState
     }
 
     NotificationServer {
@@ -130,8 +129,7 @@ Item {
                 "expireTime": Date.now() + 5000
             };
             root.notifications.insert(0, entry);
-            
-            var isLocked = root.globalState ? root.globalState.isLocked : false
+            var isLocked = root.globalState ? root.globalState.isLocked : false;
             if (root.ready && !isLocked) {
                 root.activeNotifications.insert(0, entry);
                 root.popupVisible = true;
