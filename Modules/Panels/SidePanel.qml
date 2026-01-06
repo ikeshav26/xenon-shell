@@ -243,6 +243,14 @@ PanelWindow {
             id: controlHandler
         }
 
+        MouseArea {
+            anchors.fill: parent
+            z: -1
+            hoverEnabled: true // Allow hover, but consume clicks
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: (mouse) => mouse.accepted = true
+        }
+
         layer.effect: DropShadow {
             transparentBorder: true
             radius: 16
@@ -316,6 +324,14 @@ PanelWindow {
 
         HoverHandler {
             id: notifHandler
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            z: -1
+            hoverEnabled: true // Allow hover, but consume clicks
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: (mouse) => mouse.accepted = true
         }
 
         layer.effect: DropShadow {
