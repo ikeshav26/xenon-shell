@@ -24,11 +24,8 @@ Singleton {
     property bool debug: false
     property bool _loading: false
     property bool hideWorkspaceNumbers: false
-<<<<<<< HEAD
     property bool hideAppIcons: false
-=======
     property bool use24HourFormat: true
->>>>>>> 3d5fb07 (24-hour time toggle working)
 
     function save() {
         if (_loading)
@@ -248,11 +245,8 @@ Singleton {
             property bool lazyLoadLockScreen
             property bool debug
             property bool hideWorkspaceNumbers
-<<<<<<< HEAD
             property bool hideAppIcons
-=======
             property bool use24HourFormat
->>>>>>> 3d5fb07 (24-hour time toggle working)
         }
 
     }
