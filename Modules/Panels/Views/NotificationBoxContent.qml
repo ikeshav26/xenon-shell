@@ -50,6 +50,7 @@ ColumnLayout {
                     font.pixelSize: 10
                     font.bold: true
                 }
+
             }
 
             Item {
@@ -73,13 +74,20 @@ ColumnLayout {
 
                 MouseArea {
                     id: clearMouse
+
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
                     onClicked: root.notifManager.clearHistory()
                 }
 
-                Behavior on color { ColorAnimation { duration: 150 } }
+                Behavior on color {
+                    ColorAnimation {
+                        duration: 150
+                    }
+
+                }
+
             }
 
         }
@@ -101,30 +109,16 @@ ColumnLayout {
         Layout.preferredHeight: Math.min(contentHeight > 0 ? contentHeight : 110, 300)
         clip: true
         spacing: 10
-        add: Transition {
-            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 200 }
-            NumberAnimation { property: "y"; from: -20; duration: 200; easing.type: Easing.OutQuad }
-        }
-
-        remove: Transition {
-            NumberAnimation { property: "opacity"; to: 0; duration: 200 }
-            NumberAnimation { property: "x"; to: 300; duration: 200; easing.type: Easing.InQuad }
-        }
-
-        displaced: Transition {
-            NumberAnimation { property: "y"; duration: 200; easing.type: Easing.OutQuad }
-        }
-
         model: root.notifManager.notifications
 
         Column {
             anchors.centerIn: parent
             visible: parent.count === 0
             spacing: 8
-            
+
             Text {
                 anchors.horizontalCenter: parent.horizontalCenter
-                text: "󰂛" 
+                text: "󰂛"
                 font.family: "Symbols Nerd Font"
                 font.pixelSize: 32
                 color: theme.disabled || "#4C4F5A"
@@ -136,11 +130,54 @@ ColumnLayout {
                 color: theme.muted
                 font.pixelSize: 12
             }
+
+        }
+
+        add: Transition {
+            NumberAnimation {
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: 200
+            }
+
+            NumberAnimation {
+                property: "y"
+                from: -20
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+
+        }
+
+        remove: Transition {
+            NumberAnimation {
+                property: "opacity"
+                to: 0
+                duration: 200
+            }
+
+            NumberAnimation {
+                property: "x"
+                to: 300
+                duration: 200
+                easing.type: Easing.InQuad
+            }
+
+        }
+
+        displaced: Transition {
+            NumberAnimation {
+                property: "y"
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+
         }
 
         delegate: NotificationItem {
             width: ListView.view.width
-            notifId: model.notifId 
+            notifId: model.notifId
             summary: model.summary || ""
             body: model.body || ""
             image: model.image || ""
@@ -151,7 +188,9 @@ ColumnLayout {
             theme: root.theme
             onRemoveRequested: root.notifManager.removeById(notifId)
             onClicked: root.notifManager.activate(notifId)
-            onActionClicked: (actionId) => root.notifManager.invokeAction(notifId, actionId)
+            onActionClicked: (actionId) => {
+                return root.notifManager.invokeAction(notifId, actionId);
+            }
         }
 
     }

@@ -20,7 +20,9 @@ Item {
     function clearHistory() {
         for (var i = 0; i < notifications.count; i++) {
             var item = notifications.get(i);
-            if (item.ref) item.ref.dismiss();
+            if (item.ref)
+                item.ref.dismiss();
+
         }
         notifications.clear();
         popupVisible = false;
@@ -28,7 +30,9 @@ Item {
 
     function removeAtIndex(index) {
         var item = notifications.get(index);
-        if (item && item.ref) item.ref.dismiss();
+        if (item && item.ref)
+            item.ref.dismiss();
+
         notifications.remove(index);
     }
 
@@ -44,10 +48,13 @@ Item {
             var item = notifications.get(i);
             if (item.notifId === idToRemove) {
                 if (item.ref) {
-                    try { item.ref.dismiss(); } catch (e) {}
+                    try {
+                        item.ref.dismiss();
+                    } catch (e) {
+                    }
                 }
                 notifications.remove(i);
-                return;
+                return ;
             }
         }
     }
@@ -62,7 +69,7 @@ Item {
         for (var i = 0; i < notifications.count; i++) {
             if (notifications.get(i).notifId === idToRemove) {
                 notifications.remove(i);
-                return;
+                return ;
             }
         }
     }
@@ -72,7 +79,7 @@ Item {
         for (var i = 0; i < notifications.count; i++) {
             var item = notifications.get(i);
             if (item.notifId === targetId) {
-                 if (item.ref) {
+                if (item.ref) {
                     try {
                         var nativeActions = item.ref.actions;
                         var defaultFound = false;
@@ -85,14 +92,12 @@ Item {
                                 }
                             }
                         }
-                        
-
                         root.removeById(targetId);
                     } catch (e) {
-                         Logger.w("NotifMan", "Failed to activate: " + e);
+                        Logger.w("NotifMan", "Failed to activate: " + e);
                     }
-                 }
-                 return;
+                }
+                return ;
             }
         }
     }
@@ -102,50 +107,42 @@ Item {
         for (var i = 0; i < notifications.count; i++) {
             var item = notifications.get(i);
             if (item.notifId === targetId) {
-                 if (item.ref) {
+                if (item.ref) {
                     try {
                         var nativeActions = item.ref.actions;
                         var actionInvoked = false;
-                        
                         if (nativeActions && nativeActions.length > 0) {
                             for (var k = 0; k < nativeActions.length; k++) {
                                 var nativeAction = nativeActions[k];
                                 var nativeId = "";
-                                
-
-                                if (typeof nativeAction === 'string') {
+                                if (typeof nativeAction === 'string')
                                     nativeId = nativeAction.split('=')[0];
-                                } else if (nativeAction && typeof nativeAction === 'object') {
+                                else if (nativeAction && typeof nativeAction === 'object')
                                     nativeId = nativeAction.identifier || nativeAction.key || nativeAction.id || "";
-                                }
-                                
                                 Logger.d("NotifMan", "Checking native action", k, "- ID:", nativeId, "against:", actionId);
-                                
                                 if (nativeId === actionId) {
                                     Logger.d("NotifMan", "Found matching action. Invoking...");
-                                    if (typeof nativeAction.invoke === 'function') {
+                                    if (typeof nativeAction.invoke === 'function')
                                         nativeAction.invoke();
-                                    } else {
+                                    else
                                         item.ref.invoke(actionId);
-                                    }
                                     actionInvoked = true;
                                     break;
                                 }
                             }
                         }
-
                         if (!actionInvoked) {
                             Logger.w("NotifMan", "Action ID '" + actionId + "' not found. Trying direct invoke...");
                             item.ref.invoke(actionId);
                         }
+                        if (actionId !== "default")
+                            root.removeById(targetId);
 
-
-                        if (actionId !== "default") root.removeById(targetId);
                     } catch (e) {
-                         Logger.w("NotifMan", "Failed to invoke action: " + e);
+                        Logger.w("NotifMan", "Failed to invoke action: " + e);
                     }
-                 }
-                 return;
+                }
+                return ;
             }
         }
     }
@@ -161,6 +158,7 @@ Item {
             root.activeNotifications.clear();
             root.popupVisible = false;
         }
+
         target: root.globalState
     }
 
@@ -173,16 +171,12 @@ Item {
         onNotification: (notification) => {
             notification.tracked = true;
             var uniqueId = root.notificationCounter++;
-            
-
             var mappedActions = [];
             if (notification.actions) {
                 for (var i = 0; i < notification.actions.length; i++) {
                     var act = notification.actions[i];
                     var safeId = "";
                     var safeLabel = "";
-                    
-                
                     if (typeof act === 'string') {
                         var parts = act.split('=');
                         safeId = parts[0] || "";
@@ -191,16 +185,14 @@ Item {
                         safeId = (act.identifier || act.key || act.id || "").toString();
                         safeLabel = (act.text || act.label || act.name || safeId).toString();
                     }
-                    
-                    if (safeId) {
+                    if (safeId)
                         mappedActions.push({
                             "id": safeId,
                             "label": safeLabel || safeId
                         });
-                    }
+
                 }
             }
-
             var entry = {
                 "notifId": uniqueId,
                 "ref": notification,
@@ -210,18 +202,16 @@ Item {
                 "appIcon": (notification.appIcon !== undefined) ? String(notification.appIcon) : "",
                 "image": (notification.image !== undefined) ? String(notification.image) : "",
                 "urgency": (notification.urgency !== undefined) ? Number(notification.urgency) : 0,
-                "actions": mappedActions, 
+                "actions": mappedActions,
                 "time": Qt.formatTime(new Date(), Config.use24HourFormat ? "HH:mm" : "hh:mm AP"),
                 "expireTime": Date.now() + 5000
             };
-            
             root.notifications.insert(0, entry);
-            
             var isLocked = root.globalState ? root.globalState.isLocked : false;
             if (root.ready && !isLocked) {
                 root.activeNotifications.insert(0, entry);
                 root.popupVisible = true;
-                popupTimer.restart(); 
+                popupTimer.restart();
             }
             notification.closed.connect(() => {
                 root.removeSilent(uniqueId);
@@ -231,6 +221,7 @@ Item {
 
     Timer {
         id: popupTimer
+
         interval: 1000
         repeat: true
         running: root.activeNotifications.count > 0
@@ -244,10 +235,16 @@ Item {
                 else
                     kept = true;
             }
-            if (!kept) root.popupVisible = false;
+            if (!kept)
+                root.popupVisible = false;
+
         }
     }
 
-    activeNotifications: ListModel {}
-    notifications: ListModel {}
+    activeNotifications: ListModel {
+    }
+
+    notifications: ListModel {
+    }
+
 }

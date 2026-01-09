@@ -20,6 +20,4 @@ ColumnLayout {
         color: colors.fg
     }
 
-
-
 }

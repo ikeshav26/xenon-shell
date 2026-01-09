@@ -119,7 +119,7 @@ ColumnLayout {
         Layout.fillWidth: true
         Layout.preferredHeight: 16
     }
-    
+
     Text {
         text: "Time & Date"
         font.family: Config.fontFamily
@@ -138,6 +138,7 @@ ColumnLayout {
         onActiveChanged: {
             if (Config.use24HourFormat !== active)
                 Config.use24HourFormat = active;
+
         }
     }
 
@@ -150,35 +151,35 @@ ColumnLayout {
         ComboBox {
             id: tzCombo
 
-            Layout.preferredWidth: 240
-            Layout.fillWidth: true
-            
             property var filteredTimeZones: {
-                if (!context.timezone.timeZones) return [];
-                if (searchField.text === "") return context.timezone.timeZones;
-                
+                if (!context.timezone.timeZones)
+                    return [];
+
+                if (searchField.text === "")
+                    return context.timezone.timeZones;
+
                 var searchText = searchField.text.toLowerCase();
                 return context.timezone.timeZones.filter(function(tz) {
                     return tz.toLowerCase().indexOf(searchText) !== -1;
                 });
             }
-            
+
+            Layout.preferredWidth: 240
+            Layout.fillWidth: true
             model: filteredTimeZones
-            
             currentIndex: {
                 if (context.timezone.currentSystemZone === "" || count === 0)
                     return -1;
+
                 return filteredTimeZones.indexOf(context.timezone.currentSystemZone);
             }
-
             font.family: Config.fontFamily
             font.pixelSize: 14
-            
             onActivated: {
                 var selected = filteredTimeZones[currentIndex];
-                if (selected && selected !== context.timezone.currentSystemZone) {
+                if (selected && selected !== context.timezone.currentSystemZone)
                     context.timezone.setTimeZone(selected);
-                }
+
             }
 
             contentItem: Text {
@@ -214,7 +215,6 @@ ColumnLayout {
                 width: tzCombo.width
                 height: Math.min(tzCombo.model.length * 36 + 70, 340)
                 padding: 8
-
                 onOpened: {
                     searchField.text = "";
                     searchField.forceActiveFocus();
@@ -225,21 +225,13 @@ ColumnLayout {
 
                     TextField {
                         id: searchField
+
                         Layout.fillWidth: true
                         Layout.preferredHeight: 36
-                        
                         placeholderText: "Search time zones..."
                         font.family: Config.fontFamily
                         font.pixelSize: 14
                         color: colors.fg
-
-                        background: Rectangle {
-                            color: Qt.rgba(0, 0, 0, 0.2)
-                            border.color: searchField.activeFocus ? colors.accent : colors.border
-                            border.width: searchField.activeFocus ? 2 : 1
-                            radius: 6
-                        }
-
                         leftPadding: 36
 
                         Text {
@@ -252,27 +244,24 @@ ColumnLayout {
                             color: colors.fg
                             opacity: 0.5
                         }
+
+                        background: Rectangle {
+                            color: Qt.rgba(0, 0, 0, 0.2)
+                            border.color: searchField.activeFocus ? colors.accent : colors.border
+                            border.width: searchField.activeFocus ? 2 : 1
+                            radius: 6
+                        }
+
                     }
 
                     ListView {
                         id: timeZoneList
+
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         clip: true
                         model: tzCombo.popup.visible ? tzCombo.delegateModel : null
                         currentIndex: tzCombo.highlightedIndex
-
-                        ScrollBar.vertical: ScrollBar {
-                            active: true
-                            policy: ScrollBar.AsNeeded
-                            width: 6
-                            contentItem: Rectangle {
-                                implicitWidth: 6
-                                radius: 3
-                                color: colors.accent
-                                opacity: 0.5
-                            }
-                        }
 
                         Text {
                             anchors.centerIn: parent
@@ -283,7 +272,23 @@ ColumnLayout {
                             color: colors.fg
                             opacity: 0.5
                         }
+
+                        ScrollBar.vertical: ScrollBar {
+                            active: true
+                            policy: ScrollBar.AsNeeded
+                            width: 6
+
+                            contentItem: Rectangle {
+                                implicitWidth: 6
+                                radius: 3
+                                color: colors.accent
+                                opacity: 0.5
+                            }
+
+                        }
+
                     }
+
                 }
 
                 background: Rectangle {
@@ -292,6 +297,7 @@ ColumnLayout {
                     border.width: 1
                     radius: 8
                 }
+
             }
 
             delegate: ItemDelegate {
@@ -312,8 +318,11 @@ ColumnLayout {
                     color: parent.highlighted ? colors.tile : "transparent"
                     radius: 6
                 }
+
             }
+
         }
+
     }
 
 }

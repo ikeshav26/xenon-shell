@@ -22,13 +22,6 @@ Item {
     width: implicitWidth
     height: implicitHeight
 
-    Behavior on height {
-        NumberAnimation {
-            duration: 200
-            easing.type: Easing.OutCubic
-        }
-    }
-
     Rectangle {
         id: cardBackground
 
@@ -120,6 +113,7 @@ Item {
         // Content for when a player is active
         Item {
             id: activePlayerContent
+
             anchors.fill: parent
             visible: MprisService.playerCount > 0
 
@@ -465,6 +459,7 @@ Item {
                 }
 
             }
+
         }
 
         // Empty state when no players are active
@@ -516,8 +511,11 @@ Item {
                         font.pixelSize: 14
                         color: "#dddddd"
                     }
+
                 }
+
             }
+
         }
 
         layer.effect: OpacityMask {
@@ -529,6 +527,14 @@ Item {
                 visible: false // Only used as mask source
             }
 
+        }
+
+    }
+
+    Behavior on height {
+        NumberAnimation {
+            duration: 200
+            easing.type: Easing.OutCubic
         }
 
     }

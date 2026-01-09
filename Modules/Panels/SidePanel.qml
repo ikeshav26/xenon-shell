@@ -24,9 +24,7 @@ PanelWindow {
     property bool forcedOpen: false
     property bool controlOpen: false
     property bool notifOpen: false
-
     property string currentMenu: ""
-
     property bool anyOpen: controlOpen || notifOpen || forcedOpen
 
     function show() {
@@ -150,7 +148,9 @@ PanelWindow {
         function onRequestSidePanelMenu(menu) {
             if (root.currentMenu === menu && root.controlOpen) {
                 toggleMenu(menu); // This will close it if same menu
-                if (root.currentMenu === "") root.controlOpen = false;
+                if (root.currentMenu === "")
+                    root.controlOpen = false;
+
             } else {
                 toggleMenu(menu);
             }
@@ -180,7 +180,7 @@ PanelWindow {
         x: root.getX(root.controlOpen || menuLoader.active || root.forcedOpen)
         radius: 16
         color: Qt.rgba(theme.bg.r, theme.bg.g, theme.bg.b, 0.95)
-        clip: true 
+        clip: true
         layer.enabled: root.controlOpen || menuLoader.active || root.forcedOpen
 
         Column {
@@ -248,7 +248,9 @@ PanelWindow {
             z: -1
             hoverEnabled: true // Allow hover, but consume clicks
             acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onClicked: (mouse) => mouse.accepted = true
+            onClicked: (mouse) => {
+                return mouse.accepted = true;
+            }
         }
 
         layer.effect: DropShadow {
@@ -264,14 +266,16 @@ PanelWindow {
                 easing.type: Easing.OutBack
                 easing.overshoot: 0.8
             }
+
         }
 
         Behavior on height {
-             NumberAnimation {
+            NumberAnimation {
                 duration: 400
                 easing.type: Easing.OutBack
                 easing.overshoot: 0.8
             }
+
         }
 
     }
@@ -302,7 +306,7 @@ PanelWindow {
     Rectangle {
         id: notifBox
 
-        property int maxAvailableHeight: root.height - controlBox.height - 40 - 20 
+        property int maxAvailableHeight: root.height - controlBox.height - 40 - 20
 
         width: root.boxWidth
         anchors.bottom: controlBox.top
@@ -331,7 +335,9 @@ PanelWindow {
             z: -1
             hoverEnabled: true // Allow hover, but consume clicks
             acceptedButtons: Qt.LeftButton | Qt.RightButton
-            onClicked: (mouse) => mouse.accepted = true
+            onClicked: (mouse) => {
+                return mouse.accepted = true;
+            }
         }
 
         layer.effect: DropShadow {
@@ -342,19 +348,21 @@ PanelWindow {
         }
 
         Behavior on x {
-             NumberAnimation {
+            NumberAnimation {
                 duration: 400
                 easing.type: Easing.OutBack
                 easing.overshoot: 0.8
             }
+
         }
 
         Behavior on height {
-             NumberAnimation {
+            NumberAnimation {
                 duration: 400
                 easing.type: Easing.OutBack
                 easing.overshoot: 0.8
             }
+
         }
 
     }
@@ -369,7 +377,7 @@ PanelWindow {
         HoverHandler {
             id: controlPeekHandler
         }
-        
+
         MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
@@ -388,8 +396,8 @@ PanelWindow {
         HoverHandler {
             id: notifPeekHandler
         }
-        
-         MouseArea {
+
+        MouseArea {
             anchors.fill: parent
             cursorShape: Qt.PointingHandCursor
             onClicked: root.notifOpen = !root.notifOpen

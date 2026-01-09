@@ -32,7 +32,6 @@ Item {
         globalState: root.context.appState
         notifManager: notifManager
         colors: root.context.colors
-
         volumeService: root.context.volume
         bluetoothService: root.context.bluetooth
     }

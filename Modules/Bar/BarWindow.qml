@@ -18,16 +18,12 @@ Variants {
         visible: root.context.colors.isLoaded
         implicitHeight: {
             switch (root.context.config.barSize) {
-                case "compact": return 35;
-                case "expanded": return 50;
-                default: return 40;
-            }
-        }
-
-        Behavior on implicitHeight {
-            NumberAnimation {
-                duration: 300
-                easing.type: Easing.OutQuad
+            case "compact":
+                return 35;
+            case "expanded":
+                return 50;
+            default:
+                return 40;
             }
         }
         color: "transparent"
@@ -58,6 +54,14 @@ Variants {
             networkService: root.context.network
             globalState: root.context.appState
             compositor: root.context.activeWindow
+        }
+
+        Behavior on implicitHeight {
+            NumberAnimation {
+                duration: 300
+                easing.type: Easing.OutQuad
+            }
+
         }
 
     }

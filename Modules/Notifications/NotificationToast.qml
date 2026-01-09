@@ -37,35 +37,72 @@ PanelWindow {
         spacing: 15
         model: manager.activeNotifications
         clip: false
-        interactive: false 
+        interactive: false
 
         HoverHandler {
             id: listHover
         }
 
         add: Transition {
-            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 200 }
-            NumberAnimation { property: "y"; from: -50; duration: 200; easing.type: Easing.OutQuad }
+            NumberAnimation {
+                property: "opacity"
+                from: 0
+                to: 1
+                duration: 200
+            }
+
+            NumberAnimation {
+                property: "y"
+                from: -50
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+
         }
 
         remove: Transition {
             ParallelAnimation {
-                NumberAnimation { property: "opacity"; to: 0; duration: 300; easing.type: Easing.OutQuad }
-                NumberAnimation { property: "scale"; to: 0.8; duration: 300; easing.type: Easing.OutQuad }
-                NumberAnimation { property: "x"; to: 350; duration: 300; easing.type: Easing.InBack; easing.overshoot: 1.2 }
+                NumberAnimation {
+                    property: "opacity"
+                    to: 0
+                    duration: 300
+                    easing.type: Easing.OutQuad
+                }
+
+                NumberAnimation {
+                    property: "scale"
+                    to: 0.8
+                    duration: 300
+                    easing.type: Easing.OutQuad
+                }
+
+                NumberAnimation {
+                    property: "x"
+                    to: 350
+                    duration: 300
+                    easing.type: Easing.InBack
+                    easing.overshoot: 1.2
+                }
+
             }
+
         }
 
         displaced: Transition {
-            NumberAnimation { property: "y"; duration: 200; easing.type: Easing.OutQuad }
+            NumberAnimation {
+                property: "y"
+                duration: 200
+                easing.type: Easing.OutQuad
+            }
+
         }
 
         delegate: Item {
             id: delegateRoot
 
             width: 320
-            height: visible ? implicitHeight : 0 
-            implicitHeight: mainLayout.implicitHeight + 24 + 16 
+            height: visible ? implicitHeight : 0
+            implicitHeight: mainLayout.implicitHeight + 24 + 16
             visible: index < 3
             opacity: visible ? 1 : 0
             layer.enabled: true
@@ -90,7 +127,7 @@ PanelWindow {
                     color: theme.accent
                     anchors.bottom: parent.bottom
                     anchors.right: parent.right
-                    anchors.margins: -8 
+                    anchors.margins: -8
                     z: 10
 
                     Text {
@@ -100,6 +137,7 @@ PanelWindow {
                         font.pixelSize: 11
                         font.bold: true
                     }
+
                 }
 
                 MouseArea {
@@ -108,12 +146,15 @@ PanelWindow {
                     onClicked: (mouse) => {
                         if (typeof notifId !== "undefined")
                             manager.removeById(notifId);
+
                     }
 
                     HoverHandler {
                         id: toastHandler
+
                         cursorShape: Qt.PointingHandCursor
                     }
+
                 }
 
                 ColumnLayout {
@@ -123,12 +164,10 @@ PanelWindow {
                     anchors.margins: 12
                     spacing: 8
 
-                    
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 12
 
-                        
                         Rectangle {
                             Layout.preferredWidth: 40
                             Layout.preferredHeight: 40
@@ -138,20 +177,37 @@ PanelWindow {
 
                             Image {
                                 id: imgDisplay
+
                                 anchors.fill: parent
                                 fillMode: Image.PreserveAspectCrop
                                 layer.enabled: true
                                 source: {
-                                    if (typeof image !== "undefined" && image && image.startsWith("/")) return "file://" + image;
-                                    if (typeof image !== "undefined" && image && image.includes("://")) return image;
-                                    if (typeof appIcon !== "undefined" && appIcon && appIcon.includes("/")) return "file://" + appIcon;
-                                    if (typeof appIcon !== "undefined" && appIcon) return "image://icon/" + appIcon;
+                                    if (typeof image !== "undefined" && image && image.startsWith("/"))
+                                        return "file://" + image;
+
+                                    if (typeof image !== "undefined" && image && image.includes("://"))
+                                        return image;
+
+                                    if (typeof appIcon !== "undefined" && appIcon && appIcon.includes("/"))
+                                        return "file://" + appIcon;
+
+                                    if (typeof appIcon !== "undefined" && appIcon)
+                                        return "image://icon/" + appIcon;
+
                                     return "";
                                 }
                                 visible: status === Image.Ready
+
                                 layer.effect: OpacityMask {
-                                    maskSource: Rectangle { width: 40; height: 40; radius: 12 }
+
+                                    maskSource: Rectangle {
+                                        width: 40
+                                        height: 40
+                                        radius: 12
+                                    }
+
                                 }
+
                             }
 
                             Text {
@@ -162,6 +218,7 @@ PanelWindow {
                                 color: theme.subtext
                                 visible: !imgDisplay.visible
                             }
+
                         }
 
                         ColumnLayout {
@@ -189,9 +246,9 @@ PanelWindow {
                                 maximumLineCount: 3
                                 lineHeight: 1.1
                             }
+
                         }
 
-                        
                         Item {
                             Layout.preferredWidth: 24
                             Layout.preferredHeight: 24
@@ -199,7 +256,9 @@ PanelWindow {
 
                             Canvas {
                                 id: timerCanvas
+
                                 property real progress: 0
+
                                 anchors.fill: parent
                                 onProgressChanged: requestPaint()
                                 onPaint: {
@@ -221,12 +280,14 @@ PanelWindow {
                                     ctx.lineWidth = 2;
                                     ctx.stroke();
                                 }
+
                                 NumberAnimation on progress {
                                     from: 1
                                     to: 0
                                     duration: 5000
                                     running: true
                                 }
+
                             }
 
                             Text {
@@ -236,36 +297,42 @@ PanelWindow {
                                 font.pixelSize: 10
                                 opacity: 0.5
                             }
+
                         }
+
                     }
 
-                    
                     RowLayout {
                         property var actionList: (typeof actions !== "undefined") ? actions : null
-                        visible: actionList && (
-                             (typeof actionList.count === "number" && actionList.count > 0) || 
-                             (typeof actionList.length === "number" && actionList.length > 0)
-                        )
-                        
+
+                        visible: actionList && ((typeof actionList.count === "number" && actionList.count > 0) || (typeof actionList.length === "number" && actionList.length > 0))
                         Layout.fillWidth: true
-                        Layout.leftMargin: 52 
+                        Layout.leftMargin: 52
                         spacing: 8
 
                         Repeater {
                             model: parent.actionList
-                            
+
                             delegate: Rectangle {
                                 id: actionBtn
-                                
+
                                 property string btnId: {
-                                    if (typeof modelData !== "undefined" && modelData.id) return modelData.id;
-                                    if (typeof id !== "undefined") return id; 
-                                    return ""; 
+                                    if (typeof modelData !== "undefined" && modelData.id)
+                                        return modelData.id;
+
+                                    if (typeof id !== "undefined")
+                                        return id;
+
+                                    return "";
                                 }
                                 property string btnLabel: {
-                                    if (typeof modelData !== "undefined" && modelData.label) return modelData.label;
-                                    if (typeof label !== "undefined") return label; 
-                                    return btnId; 
+                                    if (typeof modelData !== "undefined" && modelData.label)
+                                        return modelData.label;
+
+                                    if (typeof label !== "undefined")
+                                        return label;
+
+                                    return btnId;
                                 }
 
                                 Layout.preferredHeight: 30
@@ -289,18 +356,25 @@ PanelWindow {
 
                                 MouseArea {
                                     id: actionHover
+
                                     anchors.fill: parent
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         if (typeof notifId !== "undefined")
                                             manager.invokeAction(notifId, actionBtn.btnId);
+
                                     }
                                 }
+
                             }
+
                         }
+
                     }
+
                 }
+
             }
 
             layer.effect: DropShadow {
@@ -311,10 +385,13 @@ PanelWindow {
                 verticalOffset: 4
                 spread: 0
             }
+
         }
+
     }
 
     mask: Region {
         item: contentList
     }
+
 }

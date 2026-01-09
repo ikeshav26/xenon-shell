@@ -132,7 +132,6 @@ FloatingWindow {
                         page: "Bar"
                     }
 
-
                     SidebarItem {
                         label: "Background"
                         icon: "󰸉"

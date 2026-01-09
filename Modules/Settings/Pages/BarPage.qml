@@ -78,8 +78,12 @@ ColumnLayout {
             model: ["Compact", "Fluid", "Expanded"]
             currentIndex: {
                 var size = Config.barSize.toLowerCase();
-                if (size === "compact") return 0;
-                if (size === "expanded") return 2;
+                if (size === "compact")
+                    return 0;
+
+                if (size === "expanded")
+                    return 2;
+
                 return 1;
             }
             font.family: Config.fontFamily
