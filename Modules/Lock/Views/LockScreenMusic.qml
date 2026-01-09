@@ -48,7 +48,7 @@ Item {
                 }
             }
             
-            // Footer slides up (Modified to lift higher)
+            // Footer slides up
             SequentialAnimation {
                 PauseAnimation { duration: 300 }
                 NumberAnimation { target: footer; property: "anchors.bottomMargin"; from: -50; to: 60; duration: 600; easing.type: Easing.OutCubic }
@@ -145,10 +145,10 @@ Item {
                     width: Math.min(parent.width * 0.75, 480)
                     height: width
                     
-                    // ALIGNMENT CHANGE: Anchor to right of this container (towards center)
+                    // ALIGNMENT: Anchor to right of this container (towards center)
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.right: parent.right
-                    anchors.rightMargin: 30 // Gap from center line
+                    anchors.rightMargin: 30 
                     
                     opacity: 0
                     visible: root.hasMedia
@@ -206,14 +206,14 @@ Item {
 
                 ColumnLayout {
                     id: rightDashboard
-                    // ALIGNMENT CHANGE: Anchor to left of this container (towards center)
+                    // ALIGNMENT: Anchor to left of this container (towards center)
                     anchors.verticalCenter: parent.verticalCenter
                     anchors.left: parent.left
-                    anchors.leftMargin: 30 // Gap from center line
+                    anchors.leftMargin: 30 
                     
                     width: Math.min(parent.width - 60, 420)
                     spacing: 40
-                    opacity: 0 // Managed by animation
+                    opacity: 0 
 
                     // 1. Time & Date Section
                     ColumnLayout {
@@ -227,7 +227,14 @@ Item {
 
                             Text {
                                 text: {
-                                    let h = new Date().getHours() % 12 || 12;
+                                    let d = new Date();
+                                    let h = d.getHours();
+                                    
+                                    // CHECK CONFIG FOR 24H FORMAT
+                                    if (!Config.use24HourFormat) {
+                                        h = h % 12 || 12;
+                                    }
+                                    
                                     return h.toString().padStart(2, '0');
                                 }
                                 font.family: "StretchPro"
