@@ -180,7 +180,7 @@ ColumnLayout {
                 spacing: 6
 
                 Text {
-                    text: "Shell Configuration"
+                    text: "Xenon Shell"
                     font.pixelSize: 28
                     font.weight: Font.Bold
                     color: colors.fg
@@ -202,13 +202,13 @@ ColumnLayout {
                     ActionPill {
                         icon: ""
                         label: "Repository"
-                        url: "https://github.com/MannuVilasara/shell"
+                        url: "https://github.com/MannuVilasara/xenon-shell"
                     }
 
                     ActionPill {
                         icon: ""
                         label: "Issues"
-                        url: "https://github.com/MannuVilasara/shell/issues"
+                        url: "https://github.com/MannuVilasara/xenon-shell/issues"
                     }
 
                     ActionPill {
@@ -254,12 +254,12 @@ ColumnLayout {
         Repeater {
             model: [{
                 "name": "MannuVilasara",
-                "url": "https://github.com/mannuvilasara",
-                "image": "/etc/xdg/quickshell/mannu/Assets/mannu.png"
+                "url": "https://github.com/MannuVilasara",
+                "image": Quickshell.shellPath("Assets/mannu.png")
             }, {
                 "name": "ikeshav26",
                 "url": "https://github.com/ikeshav26",
-                "image": "/etc/xdg/quickshell/mannu/Assets/keshav.png"
+                "image": Quickshell.shellPath("Assets/keshav.png")
             }]
 
             delegate: Rectangle {

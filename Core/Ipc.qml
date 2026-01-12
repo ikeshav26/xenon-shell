@@ -69,7 +69,7 @@ Singleton {
     Process {
         id: dirCreator
 
-        command: ["mkdir", "-p", Quickshell.env("HOME") + "/.cache/mannu"]
+        command: ["mkdir", "-p", Quickshell.env("HOME") + "/.cache/xenon"]
         running: false
         onExited: (code, status) => {
             return root.dirCreationFinished(code);
@@ -138,7 +138,7 @@ Singleton {
     Process {
         id: powerMenuProc
 
-        command: ["quickshell", "ipc", "-c", "mannu", "call", "powermenu", "toggle"]
+        command: ["quickshell", "ipc", "-c", "xenon", "call", "powermenu", "toggle"]
         running: false
     }
 

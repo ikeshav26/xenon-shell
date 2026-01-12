@@ -31,18 +31,18 @@
 
 ### User Install
 ```bash
-git clone https://github.com/MannuVilasara/shell ~/.config/quickshell/mannu
+git clone https://github.com/MannuVilasara/xenon-shell ~/.config/quickshell/xenon
 ```
 
 ### System-wide Install
 ```bash
-sudo git clone https://github.com/MannuVilasara/shell /etc/xdg/quickshell/mannu
+sudo git clone https://github.com/MannuVilasara/xenon-shell /etc/xdg/quickshell/xenon
 ```
 
 ## IPC Calls
 
 You can interact with the shell using `qs ipc` commands.
-Format: `qs -c mannu ipc call <target> <function>`
+Format: `qs -c xenon ipc call <target> <function>`
 
 ### Available Commands
 
@@ -54,9 +54,6 @@ ipc call clipboard toggle
 ipc call sidePanel open
 ipc call sidePanel close
 ipc call sidePanel toggle
-ipc call sidePanel lock
-ipc call sidePanel unlock
-ipc call sidePanel toggleLock
 
 ipc call wallpaperpanel toggle
 

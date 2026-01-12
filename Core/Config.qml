@@ -6,7 +6,7 @@ pragma Singleton
 Singleton {
     id: root
 
-    property string configPath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/mannu/config.json"
+    property string configPath: (Quickshell.env("XDG_CONFIG_HOME") || (Quickshell.env("HOME") + "/.config")) + "/xenon/config.json"
     property string fontFamily: "JetBrainsMono Nerd Font"
     property int fontSize: 14
     property string wallpaperDirectory: Quickshell.env("HOME") + "/Pictures/Wallpapers"
